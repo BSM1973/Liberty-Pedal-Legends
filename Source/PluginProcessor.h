@@ -46,6 +46,8 @@ public:
     void setGateEnabled(bool enabled);
     void setGateThreshold(float db);
     bool gateEnabled() const noexcept;
+    int getUILanguage() const noexcept {return uiLanguage.load(std::memory_order_relaxed);}
+    void setUILanguage(int value) noexcept {uiLanguage.store(std::clamp(value,0,2),std::memory_order_relaxed);}
     float gateThreshold() const noexcept;
     void setParameterValue(const juce::String& id,float realValue);
     bool isPresetModified() const noexcept { return presetModified.load(); }
@@ -70,6 +72,7 @@ private:
     std::atomic<float>* noiseGateThreshold=nullptr;
     std::array<float,2> gateEnvelope{{0.f,0.f}};
     float gateGain=1.f;
+    std::atomic<int> uiLanguage{0}; // 0 French, 1 English, 2 Spanish
     std::atomic<int> factoryPresetIndex{0};
     std::atomic<bool> presetModified{false};
     std::atomic<float> inPeak{0.f},outPeak{0.f};

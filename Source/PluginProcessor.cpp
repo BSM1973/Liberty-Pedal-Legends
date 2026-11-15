@@ -242,6 +242,7 @@ void PedalLegendsAudioProcessor::getStateInformation(juce::MemoryBlock& out) {
     auto state=parameters.copyState();
     state.setProperty("FactoryPresetIndex",factoryPresetIndex.load(),nullptr);
     state.setProperty("FactoryPresetModified",presetModified.load(),nullptr);
+    state.setProperty("UILanguage",getUILanguage(),nullptr);
     if(auto xml=state.createXml())copyXmlToBinary(*xml,out);
 }
 void PedalLegendsAudioProcessor::setStateInformation(const void* input,int size) {
@@ -250,6 +251,7 @@ void PedalLegendsAudioProcessor::setStateInformation(const void* input,int size)
             auto state=juce::ValueTree::fromXml(*xml);
             const int preset=std::clamp(int(state.getProperty("FactoryPresetIndex",0)),0,pedal::kFactoryPresetCount-1);
             const bool changed=bool(state.getProperty("FactoryPresetModified",false));
+            setUILanguage(int(state.getProperty("UILanguage",0)));
             parameters.replaceState(state);
             factoryPresetIndex.store(preset);
             presetModified.store(changed);

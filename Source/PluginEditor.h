@@ -37,6 +37,10 @@ private:
     std::function<void(float)> dragCallback;
     float dragStart=0.f, dragY=0.f;
     juce::TextEditor search;
+    juce::ComboBox languageSelector;
+    int currentLanguage=0;
+    juce::String localized(const juce::String&) const;
+    void languageChanged();
     std::unique_ptr<juce::FileChooser> fileChooser;
     pedal::Settings snapshotA{},snapshotB{};
     bool viewingB=false;
@@ -72,7 +76,7 @@ private:
     void drawHistory(juce::Graphics&);
     void drawPresets(juce::Graphics&);
     void drawLibrary(juce::Graphics&);
-    void drawOverlay(juce::Graphics&,juce::Rectangle<float>,const juce::String&);
+    void drawOverlay(juce::Graphics&,juce::Rectangle<float>,const juce::String&,bool drawClose=true);
     void drawMeter(juce::Graphics&,juce::Rectangle<float>,float,const juce::String&);
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PedalLegendsAudioProcessorEditor)
 };

@@ -1,4 +1,5 @@
 #include "PluginEditor.h"
+#include "UILocalization.h"
 #include <algorithm>
 #include <cmath>
 #include <utility>
@@ -58,43 +59,43 @@ juce::Colour pedalPaint(pedal::Model m) {
 }
 juce::String soundDescription(pedal::Model m) {
     const auto f=juce::String(std::string(pedal::info(m).family));
-    if(f=="Overdrive")return "Saturation progressive, harmonies chaleureuses et attaque de guitare préservée.";
-    if(f=="Distortion")return "Distorsion articulée, grain dense et réponse précise aux variations de jeu.";
+    if(f=="Overdrive")return juce::String::fromUTF8("Saturation progressive, harmonies chaleureuses et attaque de guitare préservée.");
+    if(f=="Distortion")return juce::String::fromUTF8("Distorsion articulée, grain dense et réponse précise aux variations de jeu.");
     if(f=="Fuzz")return "Texture vintage riche en harmoniques, de la douceur aux sons les plus rugueux.";
-    if(f=="Compressor")return "Compression souple inspirée des grands compresseurs de pédalier et de studio.";
-    if(f=="EQ / Filter")return "Sculpture tonale expressive avec fréquences et résonances musicales.";
-    if(f=="Wah / Envelope")return "Filtrage résonant vivant, idéal pour un jeu rythmique et expressif.";
-    if(f=="Modulation")return "Mouvement enveloppant, profondeur et caractère inspirés des modulations classiques.";
+    if(f=="Compressor")return juce::String::fromUTF8("Compression souple inspirée des grands compresseurs de pédalier et de studio.");
+    if(f=="EQ / Filter")return juce::String::fromUTF8("Sculpture tonale expressive avec fréquences et résonances musicales.");
+    if(f=="Wah / Envelope")return juce::String::fromUTF8("Filtrage résonant vivant, idéal pour un jeu rythmique et expressif.");
+    if(f=="Modulation")return juce::String::fromUTF8("Mouvement enveloppant, profondeur et caractère inspirés des modulations classiques.");
     if(f=="Tremolo")return "Variation rythmique et mouvement du signal, du vintage au contemporain.";
-    if(f=="Delay / Echo")return "Répétitions musicales aux couleurs analogiques et numériques distinctives.";
-    if(f=="Reverb")return "Espace et profondeur, avec décroissance musicale et détail des transitoires.";
+    if(f=="Delay / Echo")return juce::String::fromUTF8("Répétitions musicales aux couleurs analogiques et numériques distinctives.");
+    if(f=="Reverb")return juce::String::fromUTF8("Espace et profondeur, avec décroissance musicale et détail des transitoires.");
     if(f=="Pitch / Octave")return "Effet d'octave monophonique et nuances harmoniques pour guitare et basse.";
-    if(f=="Experimental")return "Textures évolutives et délais créatifs pour l'expérimentation sonore.";
-    return "Préamplification dynamique et couleur musicale pour votre guitare.";
+    if(f=="Experimental")return juce::String::fromUTF8("Textures évolutives et délais créatifs pour l'expérimentation sonore.");
+    return juce::String::fromUTF8("Préamplification dynamique et couleur musicale pour votre guitare.");
 }
 juce::String historicalInfluence(pedal::Model m) {
     using M=pedal::Model;
     switch(m) {
-        case M::VerdantDrive:return "Ibanez Tube Screamer — inspiration de médiums et d'overdrive classique";
-        case M::GoldenArc:return "Klon Centaur — famille des overdrives transparentes et dynamiques";
-        case M::AmberBreaker:return "Marshall Bluesbreaker — inspiration du crunch blues britannique";
-        case M::OrangeVoltage:return "Pro Co RAT — famille des distorsions rock avec filtrage marqué";
-        case M::SteelFang:return "Boss DS-1 — grande tradition des distorsions compactes";
-        case M::GermaniumSun:return "Dallas-Arbiter Fuzz Face — tempérament germanium vintage";
-        case M::SiliconStorm:return "Fuzz Face silicium — caractère plus mordant et affirmé";
-        case M::OpticalSilk:return "Diamond Compressor — compression optique douce, référence esthétique générale";
-        case M::VelvetSustain:return "Ross Compressor — esprit de compression vintage et sustain";
-        case M::AzureChorus:return "Boss CE-2 — richesse du chorus analogique";
-        case M::OrbitPhase:return "MXR Phase 90 — phasing analogique classique";
-        case M::CelestialFlange:return "Electro-Harmonix Electric Mistress — esprit du flanging vintage";
-        case M::TapeVoyager:return "Maestro Echoplex — échos à bande et saturation du temps";
-        case M::MemoryTrail:return "Electro-Harmonix Deluxe Memory Man — inspiration de délai à modulation";
-        case M::SpringGarden:return "Réverbérations à ressort des amplificateurs vintage";
-        case M::GoldenPlate:return "Réverbérations à plaque de studio des années 1970";
-        case M::SculptEQ:return "Égaliseurs de tonalité analogiques pour guitare";
-        case M::VocalWah:return "Vox et Cry Baby — familles de pédales wah emblématiques";
-        default: return "Pédales et appareils de la famille "+juce::String(std::string(pedal::info(m).family))+
-                        " — inspiration générale de période";
+        case M::VerdantDrive:return juce::String::fromUTF8("Ibanez Tube Screamer — inspiration de médiums et d'overdrive classique");
+        case M::GoldenArc:return juce::String::fromUTF8("Klon Centaur — famille des overdrives transparentes et dynamiques");
+        case M::AmberBreaker:return juce::String::fromUTF8("Marshall Bluesbreaker — inspiration du crunch blues britannique");
+        case M::OrangeVoltage:return juce::String::fromUTF8("Pro Co RAT — famille des distorsions rock avec filtrage marqué");
+        case M::SteelFang:return juce::String::fromUTF8("Boss DS-1 — grande tradition des distorsions compactes");
+        case M::GermaniumSun:return juce::String::fromUTF8("Dallas-Arbiter Fuzz Face — tempérament germanium vintage");
+        case M::SiliconStorm:return juce::String::fromUTF8("Fuzz Face silicium — caractère plus mordant et affirmé");
+        case M::OpticalSilk:return juce::String::fromUTF8("Diamond Compressor — compression optique douce, référence esthétique générale");
+        case M::VelvetSustain:return juce::String::fromUTF8("Ross Compressor — esprit de compression vintage et sustain");
+        case M::AzureChorus:return juce::String::fromUTF8("Boss CE-2 — richesse du chorus analogique");
+        case M::OrbitPhase:return juce::String::fromUTF8("MXR Phase 90 — phasing analogique classique");
+        case M::CelestialFlange:return juce::String::fromUTF8("Electro-Harmonix Electric Mistress — esprit du flanging vintage");
+        case M::TapeVoyager:return juce::String::fromUTF8("Maestro Echoplex — échos à bande et saturation du temps");
+        case M::MemoryTrail:return juce::String::fromUTF8("Electro-Harmonix Deluxe Memory Man — inspiration de délai à modulation");
+        case M::SpringGarden:return juce::String::fromUTF8("Réverbérations à ressort des amplificateurs vintage");
+        case M::GoldenPlate:return juce::String::fromUTF8("Réverbérations à plaque de studio des années 1970");
+        case M::SculptEQ:return juce::String::fromUTF8("Égaliseurs de tonalité analogiques pour guitare");
+        case M::VocalWah:return juce::String::fromUTF8("Vox et Cry Baby — familles de pédales wah emblématiques");
+        default: return juce::String::fromUTF8("Pédales et appareils de la famille ")+juce::String(std::string(pedal::info(m).family))+
+                        juce::String::fromUTF8(" — inspiration générale de période");
     }
 }
 }
@@ -106,7 +107,19 @@ PedalLegendsAudioProcessorEditor::PedalLegendsAudioProcessorEditor(PedalLegendsA
     setResizeLimits(1072,624,2160,1296);
     setSize(1600,930);
     setWantsKeyboardFocus(true);
-    search.setTextToShowWhenEmpty("Rechercher...",muted);
+    currentLanguage=liberty_ui::safeLanguage(p.getUILanguage());
+    languageSelector.addItem(juce::String::fromUTF8("Français")),1);
+    languageSelector.addItem("English",2);
+    languageSelector.addItem(juce::String::fromUTF8("Español")),3);
+    languageSelector.setColour(juce::ComboBox::backgroundColourId,navy);
+    languageSelector.setColour(juce::ComboBox::textColourId,goldLight);
+    languageSelector.setColour(juce::ComboBox::outlineColourId,goldDark);
+    languageSelector.setColour(juce::ComboBox::arrowColourId,gold);
+    languageSelector.setJustificationType(juce::Justification::centred);
+    languageSelector.setSelectedId(currentLanguage+1,juce::dontSendNotification);
+    languageSelector.onChange=[this] {languageChanged();};
+    addAndMakeVisible(languageSelector);
+    search.setTextToShowWhenEmpty(localized("Rechercher..."),muted);
     search.setColour(juce::TextEditor::backgroundColourId,paper);
     search.setColour(juce::TextEditor::textColourId,ink);
     search.setColour(juce::TextEditor::outlineColourId,goldDark);
@@ -120,6 +133,16 @@ PedalLegendsAudioProcessorEditor::PedalLegendsAudioProcessorEditor(PedalLegendsA
     thresholdA=thresholdB=p.gateThreshold();
     startTimerHz(15);
 }
+juce::String PedalLegendsAudioProcessorEditor::localized(const juce::String& text) const {
+    return liberty_ui::translate(text,currentLanguage);
+}
+void PedalLegendsAudioProcessorEditor::languageChanged() {
+    if(languageSelector.getSelectedId()<1)return;
+    currentLanguage=liberty_ui::safeLanguage(languageSelector.getSelectedId()-1);
+    processor.setUILanguage(currentLanguage);
+    search.setTextToShowWhenEmpty(localized("Rechercher..."),muted);
+    repaint();
+}
 void PedalLegendsAudioProcessorEditor::updateSearch() {
     browserOffset=libraryOffset=0;
     repaint();
@@ -127,6 +150,7 @@ void PedalLegendsAudioProcessorEditor::updateSearch() {
 void PedalLegendsAudioProcessorEditor::setScreen(Screen next) {
     screen=next;
     search.setVisible(next==Screen::Presets||next==Screen::Library);
+    languageSelector.setVisible(next==Screen::Board);
     if(search.isVisible()) {
         search.clear();
         resized();
@@ -171,7 +195,7 @@ void PedalLegendsAudioProcessorEditor::savePreset() {
     presets.createDirectory();
     auto name=juce::String(pedal::factoryPresets()[size_t(processor.selectedFactoryPreset())].name)
                    .retainCharacters("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-");
-    fileChooser=std::make_unique<juce::FileChooser>("Enregistrer le pédalier",presets.getChildFile(name+".plegends"),"*.plegends");
+    fileChooser=std::make_unique<juce::FileChooser>(juce::String::fromUTF8("Enregistrer le pédalier"),presets.getChildFile(name+".plegends"),"*.plegends");
     fileChooser->launchAsync(juce::FileBrowserComponent::saveMode|
                              juce::FileBrowserComponent::canSelectFiles|
                              juce::FileBrowserComponent::warnAboutOverwriting,
@@ -187,7 +211,7 @@ void PedalLegendsAudioProcessorEditor::savePreset() {
 void PedalLegendsAudioProcessorEditor::openUserPreset() {
     const auto folder=juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
                             .getChildFile("Liberty Music Software/Pedal Legends/Presets");
-    fileChooser=std::make_unique<juce::FileChooser>("Charger un pédalier",folder,"*.plegends");
+    fileChooser=std::make_unique<juce::FileChooser>(juce::String::fromUTF8("Charger un pédalier"),folder,"*.plegends");
     fileChooser->launchAsync(juce::FileBrowserComponent::openMode|
                             juce::FileBrowserComponent::canSelectFiles,
         [this](const juce::FileChooser& chooser) {
@@ -201,7 +225,15 @@ void PedalLegendsAudioProcessorEditor::openUserPreset() {
             }
         });
 }
-void PedalLegendsAudioProcessorEditor::timerCallback() {repaint();}
+void PedalLegendsAudioProcessorEditor::timerCallback() {
+    const int saved=liberty_ui::safeLanguage(processor.getUILanguage());
+    if(saved!=currentLanguage) {
+        currentLanguage=saved;
+        languageSelector.setSelectedId(saved+1,juce::dontSendNotification);
+        search.setTextToShowWhenEmpty(localized("Rechercher..."),muted);
+    }
+    repaint();
+}
 juce::Point<float> PedalLegendsAudioProcessorEditor::logicalPoint(juce::Point<int> p) const {
     return {(float(p.x)-xOffset)/scale,(float(p.y)-yOffset)/scale};
 }
@@ -209,6 +241,9 @@ void PedalLegendsAudioProcessorEditor::resized() {
     scale=std::min(getWidth()/canvasWidth,getHeight()/canvasHeight);
     xOffset=(getWidth()-canvasWidth*scale)*.5f;
     yOffset=(getHeight()-canvasHeight*scale)*.5f;
+    const auto menu=R{1138.f,48.f,151.f,33.f};
+    languageSelector.setBounds(juce::Rectangle<int>(int(xOffset+menu.getX()*scale),int(yOffset+menu.getY()*scale),
+                                                    int(menu.getWidth()*scale),int(menu.getHeight()*scale)));
     auto r=R(385.f,190.f,700.f,37.f);
     search.setBounds(juce::Rectangle<int>(int(xOffset+r.getX()*scale),int(yOffset+r.getY()*scale),
                                             int(r.getWidth()*scale),int(r.getHeight()*scale)));
@@ -217,8 +252,10 @@ void PedalLegendsAudioProcessorEditor::drawLabel(juce::Graphics& g,const juce::S
                                                   float size,juce::Colour colour,bool serif,
                                                   juce::Justification alignment,bool bold) {
     g.setColour(colour);
-    g.setFont(juce::Font(juce::FontOptions(serif?"Georgia":"Arial",size,bold?juce::Font::bold:juce::Font::plain)));
-    g.drawFittedText(s,r.toNearestInt(),alignment,2,.78f);
+    const auto fontName=serif?juce::Font::getDefaultSerifFontName():juce::Font::getDefaultSansSerifFontName();
+    g.setFont(juce::Font(juce::FontOptions(fontName,size,bold?juce::Font::bold:juce::Font::plain)));
+    const auto cleaned=liberty_ui::safeTypography(localized(s));
+    g.drawFittedText(cleaned,r.toNearestInt(),alignment,2,.86f);
 }
 void PedalLegendsAudioProcessorEditor::hit(R r,std::function<void()> fn) {
     hotspots.push_back({r,std::move(fn),{},0.f});
@@ -278,15 +315,16 @@ void PedalLegendsAudioProcessorEditor::drawBackplate(juce::Graphics& g) {
     drawLabel(g,"PEDAL LEGENDS",R{106,34,365,49},36,goldLight,true,juce::Justification::centredLeft);
     drawLabel(g,"Vintage Soul. Modern Power.",R{107,83,360,22},16,gold,true);
     surface(g,R{492,17,626,84},navySoft,midnight,10.f,gold);
-    drawLabel(g,processor.isPresetModified()?"• MODIFICATIONS NON ENREGISTRÉES":"• FACTORY / USER",
+    drawLabel(g,"LANGUE",R{1141,23,146,19},11,goldLight,false,juce::Justification::centred,true);
+    drawLabel(g,processor.isPresetModified()?juce::String::fromUTF8("• MODIFICATIONS NON ENREGISTRÉES"):juce::String::fromUTF8("• FACTORY / USER"),
               R{513,23,290,18},11,gold,false,juce::Justification::centredLeft,true);
     const int index=std::clamp(processor.selectedFactoryPreset(),0,99);
     const auto display=lastSavedPreset.isNotEmpty()?lastSavedPreset:
         juce::String(pedal::factoryPresets()[size_t(index)].name);
     drawLabel(g,display,R{514,46,360,42},23,cream,true);
     drawLabel(g,"FACTORY / USER",R{838,27,140,18},11,muted,false,juce::Justification::centred,true);
-    button(g,R{911,61,30,30},"‹",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+99)%100);},false,false,18.f);
-    button(g,R{944,61,30,30},"›",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+1)%100);},false,false,18.f);
+    button(g,R{911,61,30,30},"<",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+99)%100);},false,false,18.f);
+    button(g,R{944,61,30,30},">",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+1)%100);},false,false,18.f);
     button(g,R{983,47,120,41},"BROWSE  100",[this]{setScreen(Screen::Presets);},true,false,13.f);
     button(g,R{1306,18,67,37},"SAVE",[this]{savePreset();},true,false,12.f);
     button(g,R{1382,18,75,37},viewingB?"A / [B]":"[A] / B",[this]{toggleAB();},true,false,12.f);
@@ -325,7 +363,7 @@ void PedalLegendsAudioProcessorEditor::drawPedal(juce::Graphics& g,R r,pedal::Mo
         g.setColour(goldLight);g.fillEllipse(x-3.f,y-3.f,6.f,6.f);
         line(g,x-2.f,y+1.f,x+2.f,y-1.f,ink,.7f);
     }
-    drawLabel(g,"L I B E R T Y   —   "+yearForModel(model),
+    drawLabel(g,juce::String::fromUTF8("L I B E R T Y   —   ")+yearForModel(model),
               R{r.getX()+15,r.getY()+7,r.getWidth()-30,17},large?12.f:9.f,goldLight,false,
               juce::Justification::centred,true);
     drawLabel(g,juce::String(std::string(pedal::info(model).name)),
@@ -356,14 +394,14 @@ void PedalLegendsAudioProcessorEditor::drawPedal(juce::Graphics& g,R r,pedal::Mo
     g.setColour(state.enabled?amber:navy);
     g.fillEllipse(switchX-60,switchY-5,9.f,9.f);
     drawLabel(g,state.enabled?"ENGAGED":"BYPASS",R{switchX+22,switchY-10,68,19},9,cream,false,juce::Justification::centredLeft);
-    drawLabel(g,"ORIGINAL MODEL  ·  LMS",R{r.getX()+16,r.getBottom()-14,r.getWidth()-32,12},
+    drawLabel(g,juce::String::fromUTF8("ORIGINAL MODEL  ·  LMS"),R{r.getX()+16,r.getBottom()-14,r.getWidth()-32,12},
               8.f,goldLight.withAlpha(.85f),false,juce::Justification::centred,true);
 }
 void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     surface(g,R{28,139,1544,641},navySoft,midnight,18.f,goldDark);
-    drawLabel(g,"• THE LIBERTY COLLECTION",R{68,149,330,27},15,goldLight,false,juce::Justification::centredLeft,true);
+    drawLabel(g,juce::String::fromUTF8("• THE LIBERTY COLLECTION"),R{68,149,330,27},15,goldLight,false,juce::Justification::centredLeft,true);
     drawLabel(g,"40 ORIGINAL PEDALS",R{322,151,185,22},12,gold,false,juce::Justification::centredLeft,true);
-    drawLabel(g,"IN   →   1  →  2  →  3  →  4   →   5  →  6  →  7  →  8   →   OUT",
+    drawLabel(g,juce::String::fromUTF8("IN   →   1  →  2  →  3  →  4   →   5  →  6  →  7  →  8   →   OUT"),
               R{1000,149,534,25},12,goldLight,false,juce::Justification::centredRight,true);
     const auto settings=processor.snapshot();
     std::array<R,pedal::kSlots> rects{};
@@ -419,11 +457,11 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
             hit(R{enclosure.getCentreX()-26,enclosure.getBottom()-63,52,52},
                 [this,i,on=stage.enabled]{processor.changeSlotEnabled(i,!on);});
             button(g,R{box.getX()+38,box.getBottom()-34,96,26},"EDIT PEDAL",[this,i]{selectSlot(i);},false,false,11.f);
-            button(g,R{box.getX()+140,box.getBottom()-34,91,26},"LIBRARY  ▾",
+            button(g,R{box.getX()+140,box.getBottom()-34,91,26},"LIBRARY  v",
                    [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,11.f);
-            button(g,R{box.getX()+239,box.getBottom()-34,31,26},"‹",
+            button(g,R{box.getX()+239,box.getBottom()-34,31,26} ,"<",
                    [this,i]{if(i>0)processor.moveSlot(i,i-1);},false,false,19.f);
-            button(g,R{box.getX()+275,box.getBottom()-34,31,26},"›",
+            button(g,R{box.getX()+275,box.getBottom()-34,31,26},juce::String::fromUTF8("›"),
                    [this,i]{if(i<7)processor.moveSlot(i,i+1);},false,false,19.f);
         } else {
             drawLabel(g,"EMPTY",R{box.getRight()-64,box.getY()+8,53,25},11,muted,false,juce::Justification::centred);
@@ -439,7 +477,7 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
             hit(empty,[this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);});
             button(g,R{box.getX()+50,box.getBottom()-34,112,26},"ADD PEDAL",
                    [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,11.f);
-            button(g,R{box.getX()+171,box.getBottom()-34,99,26},"LIBRARY  ▾",
+            button(g,R{box.getX()+171,box.getBottom()-34,99,26},"LIBRARY  v",
                    [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,11.f);
         }
     }
@@ -459,28 +497,28 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     drawLabel(g,"OUTPUT PEAK",R{754,813,167,23},13,goldLight,false,juce::Justification::centredLeft,true);
     drawMeter(g,R{554,844,175,19},processor.inputPeak()," ");
     drawMeter(g,R{806,844,175,19},processor.outputPeak()," ");
-    drawLabel(g,"−60      −24      −12       0       +6",R{552,868,182,18},10,muted);
-    drawLabel(g,"−60      −24      −12       0       +6",R{803,868,182,18},10,muted);
+    drawLabel(g,juce::String::fromUTF8("−60      −24      −12       0       +6"),R{552,868,182,18},10,muted);
+    drawLabel(g,juce::String::fromUTF8("−60      −24      −12       0       +6"),R{803,868,182,18},10,muted);
     line(g,1018,807,1018,896,goldDark,1.5f);
     drawLabel(g,"INPUT NOISE MANAGEMENT",R{1036,809,253,19},11,muted,false,
               juce::Justification::centredLeft,true);
     const bool gate=processor.gateEnabled();
-    button(g,R{1045,835,174,37},gate?"●  NOISE GATE ON":"○  NOISE GATE OFF",
+    button(g,R{1045,835,174,37},gate?"NOISE GATE ON":"NOISE GATE OFF",
            [this,gate]{processor.setGateEnabled(!gate);},true,gate,12.f);
-    drawLabel(g,"Stereo linked · no added hiss",R{1041,880,200,18},10,cream);
+    drawLabel(g,juce::String::fromUTF8("Stereo linked · no added hiss"),R{1041,880,200,18},10,cream);
     const float threshold=processor.gateThreshold();
     drawKnob(g,1280,815,22,(threshold+90.f)/75.f,"THRESHOLD",juce::String(threshold,0)+" dB",
              [this](float v){processor.setGateThreshold(v*75.f-90.f);},true);
     line(g,1370,806,1370,896,goldDark,1.5f);
-    drawLabel(g,"1973—2026",R{1390,812,170,40},26,goldLight,true,juce::Justification::centred);
-    drawLabel(g,"VINTAGE SOUL  ·  MODERN POWER",R{1390,853,172,19},9,gold,false,juce::Justification::centred,true);
+    drawLabel(g,juce::String::fromUTF8("1973—2026"),R{1390,812,170,40},26,goldLight,true,juce::Justification::centred);
+    drawLabel(g,juce::String::fromUTF8("VINTAGE SOUL  ·  MODERN POWER"),R{1390,853,172,19},9,gold,false,juce::Justification::centred,true);
     drawLabel(g,"Liberty",R{1407,873,142,27},19,goldLight,true,juce::Justification::centred);
-    drawLabel(g,"LIBERTY PEDAL LEGENDS  ·  40 ORIGINAL MODELS  ·  EIGHT SERIAL AUDIO STAGES",
+    drawLabel(g,juce::String::fromUTF8("LIBERTY PEDAL LEGENDS  ·  40 ORIGINAL MODELS  ·  EIGHT SERIAL AUDIO STAGES"),
               R{33,913,800,17},10,muted,false,juce::Justification::centredLeft);
-    drawLabel(g,"LIBERTY MUSIC SOFTWARE   © 2026",R{1210,913,347,17},10,gold,false,
+    drawLabel(g,juce::String::fromUTF8("LIBERTY MUSIC SOFTWARE   © 2026"),R{1210,913,347,17},10,gold,false,
               juce::Justification::centredRight);
 }
-void PedalLegendsAudioProcessorEditor::drawOverlay(juce::Graphics& g,R bounds,const juce::String& heading) {
+void PedalLegendsAudioProcessorEditor::drawOverlay(juce::Graphics& g,R bounds,const juce::String& heading,bool drawClose) {
     // Modal input is exclusive: none of the board's hitboxes remain active.
     hotspots.clear();
     g.setColour(midnight.withAlpha(.81f));g.fillRect(R{0,0,canvasWidth,canvasHeight});
@@ -490,8 +528,8 @@ void PedalLegendsAudioProcessorEditor::drawOverlay(juce::Graphics& g,R bounds,co
         line(g,bounds.getX()+3.f,y,bounds.getRight()-3.f,y,ink.withAlpha(.012f));
     drawLabel(g,heading,R{bounds.getX()+36.f,bounds.getY()+10.f,bounds.getWidth()-125.f,23.f},12,
               goldDark,false,juce::Justification::centredLeft,true);
-    button(g,R{bounds.getRight()-71,bounds.getY()+30,41,41},"×",
-           [this]{setScreen(Screen::Board);},false,false,25.f);
+    if(drawClose)button(g,R{bounds.getRight()-71,bounds.getY()+30,41,41},"X",
+           [this]{setScreen(Screen::Board);},false,false,23.f);
 }
 void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
     const R panel{151,91,1298,727};
@@ -512,11 +550,11 @@ void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
         drawPedal(g,R{189,236,392,319},stage.model,stage,true);
         drawLabel(g,soundDescription(stage.model),R{188,580,392,63},16,ink,true,
                   juce::Justification::centredTop);
-        drawLabel(g,"Interprétation sonore originale · aucune revendication de copie exacte de circuit.",
+        drawLabel(g,juce::String::fromUTF8("Interprétation sonore originale · aucune revendication de copie exacte de circuit."),
                   R{190,650,392,30},11,goldDark,true,juce::Justification::centred);
     } else {
         drawLabel(g,"+",R{286,300,170,170},92,goldDark,false,juce::Justification::centred);
-        drawLabel(g,"Choisissez une pédale de la collection Liberty",R{203,515,370,36},17,ink,true,
+        drawLabel(g,juce::String::fromUTF8("Choisissez une pédale de la collection Liberty"),R{203,515,370,36},17,ink,true,
                   juce::Justification::centred);
     }
     if(has) {
@@ -537,9 +575,9 @@ void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
                  juce::String(stage.levelDb,1)+" dB",
                  [this](float v){processor.setSlotLevel(selectedSlot,v*36.f-18.f);});
         line(g,672.f,560.f,1406.f,560.f,goldDark.withAlpha(.28f));
-        button(g,R{683,598,155,42},stage.enabled?"●  PEDAL ON":"○  PEDAL OFF",
+        button(g,R{683,598,155,42},stage.enabled?"PEDAL ON":"PEDAL OFF",
                [this,on=stage.enabled]{processor.changeSlotEnabled(selectedSlot,!on);},false,stage.enabled,14.f);
-        drawLabel(g,"Quatre paramètres propres au modèle, mix et niveau indépendants.",
+        drawLabel(g,juce::String::fromUTF8("Quatre paramètres propres au modèle, mix et niveau indépendants."),
                   R{872,601,326,35},13,ink,true,juce::Justification::centred);
     }
     button(g,R{1213,595,184,48},has?"REPLACE PEDAL":"ADD PEDAL",
@@ -555,51 +593,55 @@ void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
         surface(g,R{442,754,96,38},paper.darker(.04f),paper.darker(.1f),5.f,goldDark.withAlpha(.2f));
         drawLabel(g,"PASTE",R{442,754,96,38},12,muted,false,juce::Justification::centred);
     }
-    drawLabel(g,"Le déplacement échange les deux étages DSP, pas seulement leurs illustrations.",
+    drawLabel(g,juce::String::fromUTF8("Le déplacement échange les deux étages DSP, pas seulement leurs illustrations."),
               R{553,751,450,45},12,ink,true,juce::Justification::centred);
-    if(selectedSlot>0)button(g,R{1060,754,165,38},"‹ MOVE LEFT",
+    if(selectedSlot>0)button(g,R{1060,754,165,38},"< MOVE LEFT",
         [this]{processor.moveSlot(selectedSlot,selectedSlot-1);selectSlot(selectedSlot-1);},true,false,12.f);
-    if(selectedSlot<7)button(g,R{1231,754,170,38},"MOVE RIGHT ›",
+    if(selectedSlot<7)button(g,R{1231,754,170,38},"MOVE RIGHT >",
         [this]{processor.moveSlot(selectedSlot,selectedSlot+1);selectSlot(selectedSlot+1);},true,false,12.f);
 }
 void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     const R panel{103,64,1394,815};
-    drawOverlay(g,panel,"LIBERTY MUSIC SOFTWARE · ENCYCLOPÉDIE");
+    drawOverlay(g,panel,juce::String::fromUTF8("LIBERTY MUSIC SOFTWARE · ENCYCLOPÉDIE"),false);
     surface(g,R{109,71,1382,110},navySoft,midnight,11.f,gold);
-    drawLabel(g,"▣",R{145,98,59,55},38,goldLight,false,juce::Justification::centred);
-    drawLabel(g,"LIBERTY MUSIC SOFTWARE · ENCYCLOPÉDIE",R{212,80,470,20},12,goldLight,false,
+    g.setColour(goldLight);
+    g.drawRoundedRectangle(R{157,109,36,30},4.f,1.7f);
+    line(g,175,110,175,137,goldLight,1.5f);
+    line(g,161,116,171,116,goldLight,1.f);
+    line(g,180,116,190,116,goldLight,1.f);
+    drawLabel(g,juce::String::fromUTF8("LIBERTY MUSIC SOFTWARE · ENCYCLOPÉDIE"),R{212,80,470,20},12,goldLight,false,
               juce::Justification::centredLeft,true);
     drawLabel(g,"PEDAL HISTORY",R{213,103,510,51},35,goldLight,true);
     drawLabel(g,"Discover the legends behind the sound",R{213,154,422,19},15,gold,true);
-    drawLabel(g,"● LECTURE SEULE",R{1142,88,153,23},13,goldLight,false,juce::Justification::centredLeft,true);
-    drawLabel(g,"Aucun réglage n'est appliqué",R{1104,111,212,21},11,cream,true,
+    drawLabel(g,juce::String::fromUTF8("● LECTURE SEULE"),R{1142,88,153,23},13,goldLight,false,juce::Justification::centredLeft,true);
+    drawLabel(g,juce::String::fromUTF8("Aucun réglage n'est appliqué"),R{1104,111,212,21},11,cream,true,
               juce::Justification::centredLeft);
-    button(g,R{1292,98,149,42},"RETOUR À L'ÉDITEUR",[this]{setScreen(Screen::Editor);},true,false,11.f);
+    button(g,R{1292,98,149,42},juce::String::fromUTF8("RETOUR À L'ÉDITEUR"),[this]{setScreen(Screen::Editor);},true,false,11.f);
     // Make sure close remains visible on top of the modal header.
-    button(g,R{1452,81,36,36},"×",[this]{setScreen(Screen::Board);},false,false,21.f);
+    button(g,R{1452,81,36,36},"X",[this]{setScreen(Screen::Board);},false,false,21.f);
     // Side navigation is always in the same place and does not load a pedal.
     surface(g,R{108,180,393,649},navySoft,midnight,4.f,goldDark);
     const auto model=pedal::Model(std::clamp(historyModel,1,pedal::kModelCount-1));
     const auto& md=pedal::info(model);
-    drawLabel(g,"FICHE "+juce::String(historyModel).paddedLeft('0',2)+"   /   40",
+    drawLabel(g,localized("entry_label")+juce::String(historyModel).paddedLeft('0',2)+"   /   40",
               R{136,195,290,20},12,goldLight,false,juce::Justification::centredLeft,true);
     drawLabel(g,juce::String(std::string(md.name)),R{136,225,335,48},32,cream,true);
     drawLabel(g,familyText(md.family),R{137,275,329,22},13,goldLight,false,juce::Justification::centredLeft,true);
-    drawLabel(g,"Inspirations musicales, "+juce::String(std::string(md.era)),R{137,301,317,49},15,cream,true);
+    drawLabel(g,localized("period_intro")+juce::String(std::string(md.era)),R{137,301,317,49},15,cream,true);
     pedal::SlotSettings sample;sample.model=model;sample.enabled=true;sample.controls=md.defaults;
     drawPedal(g,R{138,359,332,239},model,sample);
-    drawLabel(g,"Illustration Liberty · lecture seule",R{141,608,327,17},11,cream,true,
+    drawLabel(g,juce::String::fromUTF8("Illustration Liberty · lecture seule"),R{141,608,327,17},11,cream,true,
               juce::Justification::centred);
     line(g,138,639,472,639,goldDark.withAlpha(.65f));
     drawLabel(g,"EXPLORER LES 40 FICHES",R{138,652,290,22},12,goldLight,false,
               juce::Justification::centredLeft,true);
-    button(g,R{137,683,39,40},"‹",[this]{historyModel=historyModel<=1?40:historyModel-1;},false,false,21.f);
+    button(g,R{137,683,39,40} ,"<",[this]{historyModel=historyModel<=1?40:historyModel-1;},false,false,21.f);
     button(g,R{182,683,235,40},juce::String(std::string(md.name)),
            [this]{historyModel=historyModel==40?1:historyModel+1;},true,false,14.f);
-    button(g,R{423,683,40,40},"›",[this]{historyModel=historyModel>=40?1:historyModel+1;},false,false,21.f);
-    drawLabel(g,"La consultation ne charge aucune pédale.",R{137,726,328,17},11,cream,true);
+    button(g,R{423,683,40,40},juce::String::fromUTF8("›"),[this]{historyModel=historyModel>=40?1:historyModel+1;},false,false,21.f);
+    drawLabel(g,juce::String::fromUTF8("La consultation ne charge aucune pédale."),R{137,726,328,17},11,cream,true);
     line(g,138,754,472,754,goldDark.withAlpha(.65f));
-    drawLabel(g,"DANS VOTRE PÉDALIER",R{137,765,305,21},11,goldLight,false,
+    drawLabel(g,juce::String::fromUTF8("DANS VOTRE PÉDALIER"),R{137,765,305,21},11,goldLight,false,
               juce::Justification::centredLeft,true);
     const auto cfg=processor.snapshot();
     for(int slot=0;slot<8;++slot) {
@@ -623,7 +665,7 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
         button(g,R{530+tab*128.f,190,122,38},names[tab],[this,tab]{historyTab=tab;},
                historyTab==tab,historyTab==tab,12.f);
     }
-    drawLabel(g,"PÉDALE DE L'EMPLACEMENT SÉLECTIONNÉ",R{1115,189,341,39},11,goldDark,false,
+    drawLabel(g,juce::String::fromUTF8("PÉDALE DE L'EMPLACEMENT SÉLECTIONNÉ"),R{1115,189,341,39},11,goldDark,false,
               juce::Justification::centredRight,true);
     line(g,507,234,1490,234,goldDark.withAlpha(.34f));
     const auto labelSection=[this,&g](char letter,const juce::String& title,float y){
@@ -636,65 +678,65 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     const auto family=juce::String(std::string(md.family));
     if(historyTab==0) {
         labelSection('A',"L'HISTOIRE",256.f);
-        drawLabel(g,"Les effets de la famille "+family+" ont façonné le son de la guitare électrique. De l'époque "+
-                  juce::String(std::string(md.era))+" à nos jours, les musiciens ont exploré leurs circuits, leur réponse et leurs couleurs. " +
-                  title+" réinterprète cet héritage avec un traitement DSP original, pensé pour le jeu et la création musicale.",
+        drawLabel(g,"Les effets de la famille "+family+juce::String::fromUTF8(" ont façonné le son de la guitare électrique. De l'époque ")+
+                  juce::String(std::string(md.era))+juce::String::fromUTF8(" à nos jours, les musiciens ont exploré leurs circuits, leur réponse et leurs couleurs. ") +
+                  title+juce::String::fromUTF8(" réinterprète cet héritage avec un traitement DSP original, pensé pour le jeu et la création musicale."),
                   R{535,294,925,109},18,ink,true,juce::Justification::topLeft);
         labelSection('B',"INSPIRATIONS HISTORIQUES",418.f);
-        drawLabel(g,"Repères sonores et culturels, jamais une revendication de réplique officielle.",
+        drawLabel(g,juce::String::fromUTF8("Repères sonores et culturels, jamais une revendication de réplique officielle."),
                   R{535,450,918,28},13,goldDark,true);
         surface(g,R{535,483,925,82},paper,goldLight,7.f,goldDark);
         drawLabel(g,historicalInfluence(model),R{556,495,880,29},17,ink,true,
                   juce::Justification::centredLeft,true);
-        drawLabel(g,"Influence de famille · les marques et matériels cités sont leurs propres références.",
+        drawLabel(g,juce::String::fromUTF8("Influence de famille · les marques et matériels cités sont leurs propres références."),
                   R{558,530,871,25},13,ink,true);
-        labelSection('C',"CARACTÈRE SONORE",589.f);
-        drawLabel(g,soundDescription(model)+" Les paramètres répondent au niveau d'entrée, au toucher et à l'ordre des effets. "
-                  "L'architecture garde une signature propre à chaque modèle.",R{535,631,920,72},17,ink,true,
+        labelSection('C',juce::String::fromUTF8("CARACTÈRE SONORE"),589.f);
+        drawLabel(g,soundDescription(model)+juce::String::fromUTF8(" Les paramètres répondent au niveau d'entrée, au toucher et à l'ordre des effets. ")
+                  juce::String::fromUTF8("L'architecture garde une signature propre à chaque modèle."),R{535,631,920,72},17,ink,true,
                   juce::Justification::topLeft);
         labelSection('D',"CONSEILS DE SOUND DESIGN",719.f);
-        drawLabel(g,"Commencez par un mix modéré puis ajustez le gain et le caractère à votre guitare. "
-                  "Toutes les valeurs sont indicatives et rien n'est appliqué automatiquement.",
+        drawLabel(g,juce::String::fromUTF8("Commencez par un mix modéré puis ajustez le gain et le caractère à votre guitare. ")
+                  juce::String::fromUTF8("Toutes les valeurs sont indicatives et rien n'est appliqué automatiquement."),
                   R{535,755,921,51},15,ink,true,juce::Justification::topLeft);
     } else if(historyTab==1) {
         labelSection('A',"LA SIGNATURE SONORE",266.f);
         drawLabel(g,soundDescription(model),R{534,318,911,78},21,ink,true,juce::Justification::topLeft);
         labelSection('B',"LE COMPORTEMENT AUDIO",425.f);
-        drawLabel(g,"Ce modèle traite réellement l'audio dans son slot, avec des réglages indépendants, "
-                  "la compensation de niveau et un bypass progressif. Les effets s'enchaînent dans l'ordre 1 à 8.",
+        drawLabel(g,juce::String::fromUTF8("Ce modèle traite réellement l'audio dans son slot, avec des réglages indépendants, ")
+                  juce::String::fromUTF8("la compensation de niveau et un bypass progressif. Les effets s'enchaînent dans l'ordre 1 à 8."),
                   R{535,469,908,89},19,ink,true,juce::Justification::topLeft);
-        labelSection('C',"RÉGLAGES DU MODÈLE",586.f);
+        labelSection('C',juce::String::fromUTF8("RÉGLAGES DU MODÈLE"),586.f);
         juce::String controls;
         for(int c=0;c<pedal::kControls;++c) {
-            if(c)controls+="    ·    ";
+            if(c)controls+=juce::String::fromUTF8("    ·    ");
             controls+=juce::String(std::string(md.controls[size_t(c)]));
         }
         drawLabel(g,controls,R{535,635,916,43},17,ink,true);
-        drawLabel(g,"Les réglages affichés dans l'éditeur agissent sur les paramètres réels du DSP.",
+        drawLabel(g,juce::String::fromUTF8("Les réglages affichés dans l'éditeur agissent sur les paramètres réels du DSP."),
                   R{535,688,913,60},16,ink,true);
     } else {
-        labelSection('A',"PREMIER RÉGLAGE",270.f);
+        labelSection('A',juce::String::fromUTF8("PREMIER RÉGLAGE"),270.f);
         drawLabel(g,"Chargez "+title+" seul sur un emplacement, placez les autres effets en bypass "
-                  "et ajustez les contrôles progressivement. Comparez les sons à niveau de sortie équivalent.",
+                  juce::String::fromUTF8("et ajustez les contrôles progressivement. Comparez les sons à niveau de sortie équivalent."),
                   R{535,319,916,89},19,ink,true,juce::Justification::topLeft);
-        labelSection('B',"CHAÎNE DE TRAITEMENT",447.f);
-        drawLabel(g,"Testez différentes positions avant et après les pédales de saturation, puis ajoutez "
-                  "une modulation, un délai ou une réverbération selon votre intention musicale.",
+        labelSection('B',juce::String::fromUTF8("CHAÎNE DE TRAITEMENT"),447.f);
+        drawLabel(g,juce::String::fromUTF8("Testez différentes positions avant et après les pédales de saturation, puis ajoutez ")
+                  juce::String::fromUTF8("une modulation, un délai ou une réverbération selon votre intention musicale."),
                   R{535,496,916,89},19,ink,true,juce::Justification::topLeft);
-        labelSection('C',"EXPÉRIENCES MUSICALES",621.f);
-        drawLabel(g,"Expérimentez avec un son clair, un riff dynamique et des accords longs. "
-                  "Ajustez le mix par slot pour retrouver de la définition sans perdre la couleur de l'effet.",
+        labelSection('C',juce::String::fromUTF8("EXPÉRIENCES MUSICALES"),621.f);
+        drawLabel(g,juce::String::fromUTF8("Expérimentez avec un son clair, un riff dynamique et des accords longs. ")
+                  juce::String::fromUTF8("Ajustez le mix par slot pour retrouver de la définition sans perdre la couleur de l'effet."),
                   R{535,666,918,93},19,ink,true,juce::Justification::topLeft);
     }
-    drawLabel(g,"40 fiches françaises  ·  références pédagogiques  ·  illustrations originales Liberty",
+    drawLabel(g,juce::String::fromUTF8("40 fiches françaises  ·  références pédagogiques  ·  illustrations originales Liberty"),
               R{126,840,880,22},11,goldDark,true);
     drawLabel(g,"VINTAGE SOUL. MODERN POWER.",R{1140,840,321,22},12,goldDark,false,
               juce::Justification::centredRight,true);
 }
 void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
     const R panel{321,120,958,685};
-    drawOverlay(g,panel,"BIBLIOTHÈQUE DE PRESETS · 100 PRESETS D'USINE");
-    drawLabel(g,"LE SON POUR CHAQUE ÉPOQUE",R{383,141,742,42},28,ink,true);
+    drawOverlay(g,panel,juce::String::fromUTF8("BIBLIOTHÈQUE DE PRESETS · 100 PRESETS D'USINE"));
+    drawLabel(g,juce::String::fromUTF8("LE SON POUR CHAQUE ÉPOQUE"),R{383,141,742,42},28,ink,true);
     drawLabel(g,"Rechercher parmi 10 familles musicales",R{385,225,700,24},14,goldDark,true);
     for(int i=0;i<11;++i) {
         const int row=i/6,col=i%6;
@@ -713,7 +755,7 @@ void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
         matches.push_back(i);
     }
     browserOffset=std::clamp(browserOffset,0,std::max(0,int(matches.size())-10));
-    drawLabel(g,"FACTORY  ·  "+juce::String(matches.size())+" résultats",R{386,356,535,30},16,ink,true);
+    drawLabel(g,juce::String::fromUTF8("FACTORY  ·  ")+juce::String(matches.size())+juce::String::fromUTF8(" résultats"),R{386,356,535,30},16,ink,true);
     for(int i=0;i<10&&browserOffset+i<int(matches.size());++i){
         const int actual=matches[size_t(browserOffset+i)];
         const auto& preset=pedal::factoryPresets()[size_t(actual)];
@@ -722,14 +764,14 @@ void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
             g.setColour(goldLight.withAlpha(.46f));g.fillRoundedRectangle(r,4.f);
         }
         button(g,r,juce::String(actual+1).paddedLeft('0',3)+"   "+juce::String(preset.name)+
-               "      ·      "+juce::String(preset.category),
+               juce::String::fromUTF8("      ·      ")+juce::String(preset.category),
                [this,actual]{processor.loadFactoryPreset(actual);lastSavedPreset.clear();setScreen(Screen::Board);},
                actual==processor.selectedFactoryPreset(),false,12.8f);
     }
-    drawLabel(g,"PAGE  "+juce::String(browserOffset+1)+"–"+
+    drawLabel(g,"PAGE  "+juce::String(browserOffset+1)+juce::String::fromUTF8("–")+
               juce::String(std::min(int(matches.size()),browserOffset+10))+" / "+juce::String(matches.size()),
               R{390,706,462,26},14,ink,true);
-    button(g,R{940,705,102,35},"PRÉCÉDENT",[this]{browserOffset=std::max(0,browserOffset-10);},true,false,11.f);
+    button(g,R{940,705,102,35},juce::String::fromUTF8("PRÉCÉDENT"),[this]{browserOffset=std::max(0,browserOffset-10);},true,false,11.f);
     button(g,R{1048,705,113,35},"SUIVANT",[this,maxItems=int(matches.size())]{browserOffset=std::min(std::max(0,maxItems-10),browserOffset+10);},
            true,false,11.f);
     button(g,R{768,756,427,35},"OUVRIR UN PRESET UTILISATEUR  (.plegends)",
@@ -737,10 +779,10 @@ void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
 }
 void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
     const R panel{251,117,1098,709};
-    drawOverlay(g,panel,"LA COLLECTION LIBERTY  ·  40 MODÈLES DSP");
-    drawLabel(g,"CHOISIR LA PÉDALE DE L'EMPLACEMENT "+juce::String(selectedSlot+1),
+    drawOverlay(g,panel,juce::String::fromUTF8("LA COLLECTION LIBERTY  ·  40 MODÈLES DSP"));
+    drawLabel(g,juce::String::fromUTF8("CHOISIR LA PÉDALE DE L'EMPLACEMENT ")+juce::String(selectedSlot+1),
               R{383,139,885,44},27,ink,true);
-    drawLabel(g,"Rechercher un modèle, une famille ou une époque",R{385,230,700,24},14,goldDark,true);
+    drawLabel(g,juce::String::fromUTF8("Rechercher un modèle, une famille ou une époque"),R{385,230,700,24},14,goldDark,true);
     static constexpr const char* families[]={"Overdrive","Distortion","Fuzz","Boost / Preamp","Compressor",
                   "EQ / Filter","Wah / Envelope","Modulation","Tremolo","Delay / Echo","Reverb",
                   "Pitch / Octave","Experimental"};
@@ -762,7 +804,7 @@ void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
         matches.push_back(i);
     }
     libraryOffset=std::clamp(libraryOffset,0,std::max(0,int(matches.size())-12));
-    drawLabel(g,juce::String(matches.size())+" pédales dans cette sélection",
+    drawLabel(g,juce::String(matches.size())+juce::String::fromUTF8(" pédales dans cette sélection"),
               R{287,375,700,30},17,ink,true);
     for(int k=0;k<12&&libraryOffset+k<int(matches.size());++k){
         const int i=matches[size_t(libraryOffset+k)];
@@ -776,13 +818,13 @@ void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
         g.setColour(gold);g.drawRoundedRectangle(R{r.getX()+8,r.getY()+9,58,49},6.f,1.5f);
         drawLabel(g,juce::String(std::string(item.name)),R{r.getX()+79,r.getY()+7,243,29},20,ink,true,
                   juce::Justification::centredLeft,true);
-        drawLabel(g,familyText(item.family)+"  ·  "+juce::String(std::string(item.era)),
+        drawLabel(g,familyText(item.family)+juce::String::fromUTF8("  ·  ")+juce::String(std::string(item.era)),
                   R{r.getX()+79,r.getY()+37,242,22},10,goldDark,false);
         hit(r,[this,i]{showModel(i);});
     }
     button(g,R{278,750,197,41},"EMPLACEMENT VIDE",[this]{showModel(0);},true,false,12.f);
-    button(g,R{972,750,142,41},"‹ PRÉCÉDENT",[this]{libraryOffset=std::max(0,libraryOffset-12);},true,false,11.f);
-    button(g,R{1119,750,176,41},"SUIVANT ›",[this,maxItems=int(matches.size())]{
+    button(g,R{972,750,142,41},juce::String::fromUTF8("‹ PRÉCÉDENT"),[this]{libraryOffset=std::max(0,libraryOffset-12);},true,false,11.f);
+    button(g,R{1119,750,176,41},juce::String::fromUTF8("SUIVANT ›"),[this,maxItems=int(matches.size())]{
         libraryOffset=std::min(std::max(0,maxItems-12),libraryOffset+12);
     },true,false,11.f);
 }

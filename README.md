@@ -1,10 +1,15 @@
 # PEDAL LEGENDS — Liberty Music Software
 
-## Premium Blue & Gold UI · v0.2
-
 **Vintage Soul. Modern Power.**
 
 Clean-room, original project created from the supplied PEDAL LEGENDS specification (1973–2026). No other PEDAL LEGENDS implementation is imported.
+
+## Interface localisation and text rendering (v0.2.1)
+
+- Correct JUCE Unicode rendering: every non-ASCII C++ UI literal uses explicit UTF-8 decoding; unsupported decorative glyphs are replaced by portable punctuation or vector icons. Accents (é, è, à, ñ) are preserved.
+- Native language selector in the free top-header gap, never touching presets, SAVE, A/B, BYPASS or audio meters. Available: Français (default), English, Español. Translations cover the board, editor, encyclopedia, navigation, effect families, preset categories and file dialogs; proprietary pedal and preset names remain unchanged.
+- Chosen language is stored with the AU/VST3 project state; loading an older project defaults to French. The language control is hidden behind modal views so it cannot overlap their contents.
+- No DSP architecture or 100 factory presets altered by this patch.
 
 ## Current implementation
 
