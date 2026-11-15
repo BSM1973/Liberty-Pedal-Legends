@@ -5,8 +5,14 @@
 #include <string_view>
 
 namespace pedal {
-constexpr int kSeriesPresetCount = 100;
-constexpr int kParallelPresetCount = 100;
+// Immutable indices of the original 200 factory presets, for saved DAW sessions.
+constexpr int kOriginalSeriesPresetCount = 100;
+constexpr int kOriginalParallelPresetCount = 100;
+constexpr int kOriginalPresetCount = kOriginalSeriesPresetCount + kOriginalParallelPresetCount;
+constexpr int kAddedSeriesPresetCount = 100;
+constexpr int kAddedParallelPresetCount = 100;
+constexpr int kSeriesPresetCount = kOriginalSeriesPresetCount + kAddedSeriesPresetCount;
+constexpr int kParallelPresetCount = kOriginalParallelPresetCount + kAddedParallelPresetCount;
 constexpr int kFactoryPresetCount = kSeriesPresetCount + kParallelPresetCount;
 constexpr int kPresetCategoryCount = 10;
 const std::array<std::string_view, kPresetCategoryCount>& presetCategories() noexcept;

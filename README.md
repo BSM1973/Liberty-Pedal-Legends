@@ -1,5 +1,13 @@
 # PEDAL LEGENDS — Liberty Music Software
 
+## v0.5.0 — 400 factory presets (200 series + 200 parallel)
+
+**Backward compatibility is preserved:** the original 200 factory presets remain byte-for-byte equivalent in name, index, routing, model settings and level parameters. Their stable positions are 0–99 (series) and 100–199 (parallel). Exactly 100 new serial patches are appended at indices 200–299, and 100 new parallel A/B patches at indices 300–399.
+
+All 200 additions explore the 40 new DSP pedals introduced in v0.4, with 10 musical categories and purposefully selected five-to-seven-stage chains. Every new patch uses at least three of the added pedals; every new pedal appears in both new banks. The preset browser filters and headings now show 400 total / 200 series / 200 parallel in Français, English, and Español.
+
+**No graphic geometry or pedal graphics have been changed:** the 1600 × 930 layout, 8 pedal slots, knob sizes, colours, full library of 80 history entries and series/parallel DSP modes remain unchanged. Test coverage verifies all factory presets render finite nonzero output; each added parallel preset routes both lanes A and B; 40 models are represented in each new bank. Final listening and visual QA inside a DAW are still necessary.
+
 ## v0.4.1 - Luxury colour families (visual-only)
 
 80 original Liberty pedal enclosures now use **13 distinct family palettes**: olive green overdrive, forest-green distortion, burgundy fuzz, copper boost/preamp, rose-copper compression, olive-khaki EQ, honey/orange wah, yellow-ochre modulation, amber tremolo, caramel delay, warm-sand reverb, blue-violet pitch and petrol-blue experimental. Each model has a small deterministic finish variation; catalogue thumbnails use the same colour. Gold/cream typography remains unchanged and tested for >=4.5:1 contrast at the lightest gradient endpoint. No panel, pedal, knob, label or hitbox dimensions have changed. DSP, original model IDs, factory presets, series/parallel routing and all 80 history entries are untouched.

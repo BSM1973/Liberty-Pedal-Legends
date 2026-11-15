@@ -151,7 +151,9 @@ int main() {
     }
     const auto& presets=factoryPresets();
     assert(presets.size()==kFactoryPresetCount);
-    assert(kFactoryPresetCount==200);
+    assert(kFactoryPresetCount==400);
+    assert(kSeriesPresetCount==200 && kParallelPresetCount==200);
+    assert(kOriginalPresetCount==200 && kAddedSeriesPresetCount==100 && kAddedParallelPresetCount==100);
     std::set<std::string> names;
     std::set<std::string> chains;
     int verifiedSeries=0,verifiedParallel=0;
@@ -178,7 +180,7 @@ int main() {
             assert(energy>0.0001);
         }
     }
-    // 100 new parallel patches with independently adjustable two-branch routing.
+    // Original 100 parallel patches preserved at indices 100..199.
     for(int i=100;i<200;++i) {
         const auto& preset=presets[size_t(i)];
         assert(preset.settings.routing==RoutingMode::Parallel);
@@ -195,6 +197,48 @@ int main() {
         ++verifiedParallel;
     }
     assert(verifiedSeries==100 && verifiedParallel==100);
+    // All 200 original factory entries are left unchanged. The appended 200
+    // presets must each use >= 3 of the newly-added 40 models, have unique
+    // names and live in the correct serial or parallel bank.
+    std::array<std::set<int>,2> newModelCoverage{};
+    std::array<std::set<std::string>,2> newChainSignatures{};
+    for(int i=kOriginalPresetCount;i<kFactoryPresetCount;++i) {
+        const int bank=i<kOriginalPresetCount+kAddedSeriesPresetCount?0:1;
+        const int local=i-kOriginalPresetCount-(bank==1?kAddedSeriesPresetCount:0);
+        const auto& preset=presets[size_t(i)];
+        assert(preset.category==presetCategories()[size_t(local/10)]);
+        assert(preset.settings.routing==(bank==0?RoutingMode::Series:RoutingMode::Parallel));
+        assert(names.insert(preset.name).second);
+        int active=0,added=0,branchA=0,branchB=0;
+        std::ostringstream signature;
+        for(const auto& stage:preset.settings.slots) {
+            signature<<int(stage.model)<<'/'<<stage.enabled<<'/'<<stage.branch<<':';
+            for(float c:stage.controls)signature<<int(c*10000.f)<<',';
+            if(!stage.enabled||stage.model==Model::Empty)continue;
+            ++active;
+            assert(stage.branch==0||stage.branch==1);
+            if(stage.branch==0)++branchA;else ++branchB;
+            if(int(stage.model)>40) {
+                ++added;
+                newModelCoverage[size_t(bank)].insert(int(stage.model));
+            }
+        }
+        assert(active>=5 && active<=7);
+        assert(added>=3);
+        if(bank==1)assert(branchA>0 && branchB>0);
+        assert(newChainSignatures[size_t(bank)].insert(signature.str()).second);
+        const auto rendered=render(preset.settings,48000,4096);
+        double energy=0.;for(float v:rendered)energy+=double(v)*v;
+        assert(energy>.0001);
+    }
+    // Every one of the 40 new models is showcased in both added banks.
+    for(int model=41;model<=80;++model) {
+        assert(newModelCoverage[0].count(model)==1);
+        assert(newModelCoverage[1].count(model)==1);
+    }
+    assert(newChainSignatures[0].size()==100 && newChainSignatures[1].size()==100);
+    assert(names.size()==400);
+
     Settings parallelTest;
     parallelTest.slots[0]={Model::VerdantDrive,true,info(Model::VerdantDrive).defaults};
     parallelTest.slots[1]={Model::SteelFang,true,info(Model::SteelFang).defaults};
@@ -235,5 +279,5 @@ int main() {
             for(float x:input)assert(std::isfinite(x));
         }
     }
-    std::cout << "PASS: 80 effect models, 8 audio slots, stereo, order, bypass, independent instances, finite outputs, 100 series + 100 parallel factory presets\n";
+    std::cout << "PASS: 80 effect models, 8 audio slots, stereo, order, bypass, independent instances, finite outputs, 200 series + 200 parallel factory presets\n";
 }

@@ -75,6 +75,96 @@ FactoryPreset make(int category,int variant) {
     }
     return preset;
 }
+// The original 200 factory patches (indices 0..199) are never changed.
+// The new 200 patches use the 40 added effect models (model IDs 41..80).
+constexpr std::array<Row,10> newNames{{
+ {{"Fingerstyle Amber","Royal Blues 1977","Copper Slide Dawn","Misty Delta Lead","Olive Crossroads","Pushed Tweed Nights","Blue Velvet Echo","Handwired Sunset","Golden Slide Story","Warm Rain Blues"}},
+ {{"Royal Stack Harmony","Arena Copper Lead","British Treble Glow","Triad Guitar Choir","1978 Diamond Riff","Vintage Stage Lift","Harmony Gold Rush","Classic Valve Overture","Stadium Guitar Lines","Bright Crown Solo"}},
+ {{"Orange Legacy Fire","Cosmic Saturation","Mercury Rock Edge","Razorback Lead","Dual Guitar Clash","Stereo Steel Rock","Harmonic Pressure","Heavy Velvet Stage","Lead Rocket","Firestorm Chorus"}},
+ {{"Neo Classical Attack","Velocity Metal 1986","Rising Arpeggio","Baroque Distortion","Shred Machine Lead","Hammer Tight Rhythm","Twin Lead Harmonies","Precision Sweep","High Gain Virtuoso","Eighth Note Thunder"}},
+ {{"Titanium Drop Precision","Tight Pulse Machine","Quantum Rhythm Wall","Modern Razor Attack","Wide Steel Pressure","Fusion Metal Layers","Crushing Low Cut","Mechanical Horizon","Progressive Precision","Architectural Gain"}},
+ {{"Crystal Finger Groove","Touch Sensitive Chank","Electric Meters","Funk Prism Bright","Clean Velvet Pocket","Electric Chic II","Slapback Gold","Silver Syncopation","Expressive Rhythm","Glass Percussion"}},
+ {{"Midnight Hollow Velvet","Club Blue Jazz","Soft Fingers Studio","Warm Rotary Lounge","Round Neck Pickup","Subtle Chorus Night","Copper Dark Chords","Velvet Finger Bass","Jazz Studio Glow","Late Night Clean"}},
+ {{"Celestial Reverse Bloom","Dual Orbit Stars","Sapphire Dream Field","Slow Motion Galaxy","Wide Ambient Pad","Floating Stereo Garden","Cinematic Guitar Dawn","Far Away Echoes","Ambient Harmony Lake","Endless Modulation Sky"}},
+ {{"Germanium Vision","Octavia Psychedelic","Nebula Razor Dream","Woolly Fuzz Cloud","Liquid Phase Expansion","Pulsing Tape Melt","Sevenfold Distortion","Freakbeat Garden","Gold Flange Trails","Vintage Mind Warp"}},
+ {{"Fingerstyle Polish","Crystal Lead Console","Voice of Clean Strings","Fast Attack Control","Stage Preamp Focus","Smooth Lead Bus","Transparent Rhythm Stack","Stereo Mix Shine","Round Compressor Chain","Studio Parallel Blueprint"}}
+}};
+constexpr std::array<std::array<Model,8>,10> newModelPalettes{{
+ {{Model::FingerPulse,Model::CrystalFingers,Model::FingerstyleGlow,Model::CopperContours,Model::GermaniumMist,Model::AquaVibrato,Model::VelvetSlap,Model::SpringGarden}},
+ {{Model::RoyalComp,Model::RegalTreble,Model::SapphireValve,Model::RoyalHarmony,Model::OctaviaHalo,Model::PhaseGarden,Model::DualOrbit,Model::GoldenPlate}},
+ {{Model::GlassLimiter,Model::LegacyPresence,Model::LegacyOrange,Model::CosmicSatch,Model::MercuryNine,Model::GoldenFlange2,Model::TimeMachine,Model::SpringGarden}},
+ {{Model::NeoAttack,Model::ClassicalPush,Model::NeoClassic250,Model::RisingForce,Model::TitaniumRiff,Model::CounterpointEight,Model::GoldenFlange2,Model::CathedralAir}},
+ {{Model::GlassLimiter,Model::LegacyPresence,Model::TitaniumRiff,Model::CosmicSatch,Model::SiliconRazor,Model::StereoDimension,Model::DualOrbit,Model::CathedralAir}},
+ {{Model::FingerPulse,Model::CrystalFingers,Model::FingerstyleGlow,Model::FunkPrism,Model::TalkBoxish,Model::AquaVibrato,Model::VelvetSlap,Model::GoldenPlate}},
+ {{Model::RoyalComp,Model::VelvetPreamp,Model::CopperContours,Model::FingerstyleGlow,Model::LeadSustain,Model::LiquidRotary,Model::VelvetSlap,Model::SpringGarden}},
+ {{Model::LeadSustain,Model::VelvetPreamp,Model::StereoDimension,Model::LiquidRotary,Model::GoldenFlange2,Model::DualOrbit,Model::ReverseBloom,Model::CathedralAir}},
+ {{Model::RoyalComp,Model::RegalTreble,Model::GermaniumMist,Model::OctaviaHalo,Model::NebulaSquare,Model::PhaseGarden,Model::WoollyMuff,Model::ReverseBloom}},
+ {{Model::GlassLimiter,Model::CrystalFingers,Model::HorsieSweep,Model::VintageCrying,Model::CosmicWah,Model::StereoDimension,Model::CounterpointEight,Model::GoldenPlate}}
+}};
+
+// Hand-selected slot combinations, ordered from front-end to ambience. Every
+// palette model gets used; no slot is filled with a duplicate within a patch.
+constexpr std::array<std::array<int,7>,10> newChainLayouts{{
+ {{0,1,2,4,6,7,-1}}, {{0,1,3,5,7,-1,-1}},
+ {{0,2,3,4,6,-1,-1}}, {{0,1,2,5,6,7,-1}},
+ {{0,1,3,4,5,7,-1}}, {{0,2,4,5,6,-1,-1}},
+ {{0,1,3,4,6,7,-1}}, {{0,2,3,5,7,-1,-1}},
+ {{0,1,2,3,4,7,-1}}, {{0,1,2,4,5,6,7}}
+}};
+FactoryPreset makeNewSeries(int category,int variant) {
+    FactoryPreset preset;
+    preset.name=std::string(newNames[size_t(category)][size_t(variant)]);
+    preset.category=std::string(categories[size_t(category)]);
+    auto& cfg=preset.settings;
+    cfg.routing=RoutingMode::Series;
+    cfg.globalMix=1.f;
+    cfg.inputDb=(category==3||category==4)?-3.f:0.f;
+    cfg.outputDb=(category==2||category==3||category==4)?-4.f:-1.f;
+    int stageIndex=0;
+    for(int position:newChainLayouts[size_t(variant)]) {
+        if(position<0)continue;
+        const Model m=newModelPalettes[size_t(category)][size_t(position)];
+        auto& stage=cfg.slots[size_t(stageIndex)];
+        stage.model=m;
+        stage.enabled=true;
+        stage.branch=stageIndex<3?0:1; // metadata only while in series mode
+        stage.controls=info(m).defaults;
+        const float turn=float((variant*11+category*7+position*5)%23)/22.f;
+        const float deviation=(turn-.5f)*.20f;
+        stage.controls[0]=bound(stage.controls[0]+deviation);
+        stage.controls[1]=bound(stage.controls[1]-deviation*.7f);
+        stage.controls[2]=bound(stage.controls[2]+deviation*.55f);
+        const auto family=info(m).family;
+        const bool spatial=family=="Delay / Echo"||family=="Reverb"||family=="Modulation";
+        stage.mix=spatial?bound(.49f+.10f*turn):bound(.86f+.10f*turn);
+        // Reasonable gain-staging when multiple drive stages are chained.
+        stage.levelDb=(family=="Distortion"||family=="Fuzz")?-3.0f:
+                      (family=="Overdrive"||family=="Boost / Preamp")?-1.5f:-.5f;
+        ++stageIndex;
+    }
+    return preset;
+}
+FactoryPreset makeNewParallel(const FactoryPreset& serial,int category,int variant) {
+    FactoryPreset preset=serial;
+    static constexpr std::array<const char*,10> labels{{
+        "Dual Path","Twin Focus","Stereo Contrast","Layered Motion","Split Ambience",
+        "Two-Tone Studio","Clean / Drive","Branch Dialogue","Wide Stage","Parallel Craft"
+    }};
+    preset.name += " - ";
+    preset.name += labels[size_t(variant)];
+    auto& cfg=preset.settings;
+    cfg.routing=RoutingMode::Parallel;
+    cfg.parallelBlend=bound(.29f+.047f*float(variant)+.013f*float(category%4));
+    int index=0;
+    for(auto& stage:cfg.slots) {
+        if(!stage.enabled||stage.model==Model::Empty)continue;
+        stage.branch=(index+variant/2+category)%2;
+        stage.levelDb-=.6f;
+        stage.mix=std::min(1.f,stage.mix+(stage.branch==0?.05f:0.f));
+        ++index;
+    }
+    return preset;
+}
 }
 const std::array<std::string_view,kPresetCategoryCount>& presetCategories() noexcept { return categories; }
 const std::array<FactoryPreset,kFactoryPresetCount>& factoryPresets() {
@@ -128,8 +218,18 @@ const std::array<FactoryPreset,kFactoryPresetCount>& factoryPresets() {
                     if(stage.enabled && stage.model!=Model::Empty) {stage.branch=activeA==0?0:1;break;}
                 }
             }
-            result[size_t(kSeriesPresetCount+baseIndex)]=std::move(copy);
+            result[size_t(kOriginalSeriesPresetCount+baseIndex)]=std::move(copy);
         }
+        // Append 100 new serial and 100 new parallel patches without
+        // changing the names, order or settings of the first 200.
+        for(int cat=0;cat<kPresetCategoryCount;++cat)
+            for(int variant=0;variant<10;++variant) {
+                const int local=cat*10+variant;
+                const auto series=makeNewSeries(cat,variant);
+                result[size_t(kOriginalPresetCount+local)]=series;
+                result[size_t(kOriginalPresetCount+kAddedSeriesPresetCount+local)]
+                    =makeNewParallel(series,cat,variant);
+            }
         return result;
     }();
     return presets;

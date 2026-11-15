@@ -17,7 +17,7 @@ inline const auto& dictionary() {
         auto add=[&](const char* key,const char* french,const char* english,const char* spanish) {
             result.emplace(key,Translations{decoded(french),decoded(english),decoded(spanish)});
         };
-        add("BROWSE  200","PARCOURIR  200","BROWSE  200","EXPLORAR  200");
+        add("BROWSE  400","PARCOURIR  400","BROWSE  400","EXPLORAR  400");
         add("PEDALBOARD","PÉDALIER","PEDALBOARD","PEDALERA");
         add("ROUTING","ROUTAGE","ROUTING","RUTEO");
         add("SIGNAL FLOW","CHEMIN DU SIGNAL","SIGNAL FLOW","FLUJO DE SEÑAL");
@@ -39,12 +39,12 @@ inline const auto& dictionary() {
         add("MERGE","SOMME","MERGE","SUMA");
         add("BLEND A/B","MIXAGE A/B","A/B BLEND","MEZCLA A/B");
         add("ROUTING MODE SAVED","Routage sauvegardé avec le projet et les presets","Routing saved with project and presets","Ruteo guardado con proyecto y presets");
-        add("PRESET LIBRARY 200","NAVIGATEUR DE PRESETS - 200 SONS","PRESET LIBRARY - 200 SOUNDS","BIBLIOTECA DE PRESETS - 200 SONIDOS");
-        add("200 FACTORY PRESETS","200 PRESETS D'USINE","200 FACTORY PRESETS","200 PRESETS DE FÁBRICA");
+        add("PRESET LIBRARY 400","NAVIGATEUR DE PRESETS - 400 SONS","PRESET LIBRARY - 400 SOUNDS","BIBLIOTECA DE PRESETS - 400 SONIDOS");
+        add("400 FACTORY PRESETS","400 PRESETS D'USINE","400 FACTORY PRESETS","400 PRESETS DE FÁBRICA");
         add("SEARCH PRESETS","RECHERCHER UN PRESET","SEARCH PRESETS","BUSCAR PRESETS");
-        add("ALL 200","TOUS 200","ALL 200","TODOS 200");
-        add("SERIES 100","SÉRIE 100","SERIES 100","SERIE 100");
-        add("PARALLEL 100","PARALLÈLE 100","PARALLEL 100","PARALELO 100");
+        add("ALL 400","TOUS 400","ALL 400","TODOS 400");
+        add("SERIES 200","SÉRIE 200","SERIES 200","SERIE 200");
+        add("PARALLEL 200","PARALLÈLE 200","PARALLEL 200","PARALELO 200");
         add("RESULTS","RÉSULTATS","RESULTS","RESULTADOS");
         add("PREVIOUS","PRÉCÉDENT","PREVIOUS","ANTERIOR");
         add("NEXT","SUIVANT","NEXT","SIGUIENTE");

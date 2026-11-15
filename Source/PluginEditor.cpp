@@ -336,7 +336,7 @@ void PedalLegendsAudioProcessorEditor::drawBackplate(juce::Graphics& g) {
     drawLabel(g,"FACTORY / USER",R{838,27,140,18},11,muted,false,juce::Justification::centred,true);
     button(g,R{911,53,30,30},"<",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+pedal::kFactoryPresetCount-1)%pedal::kFactoryPresetCount);},false,false,18.f);
     button(g,R{944,53,30,30},">",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+1)%pedal::kFactoryPresetCount);},false,false,18.f);
-    button(g,R{983,47,120,41},"BROWSE  200",[this]{setScreen(Screen::Presets);},true,false,13.f);
+    button(g,R{983,47,120,41},"BROWSE  400",[this]{setScreen(Screen::Presets);},true,false,13.f);
     button(g,R{1306,18,67,37},"SAVE",[this]{savePreset();},true,false,12.f);
     button(g,R{1382,18,75,37},viewingB?"A / [B]":"[A] / B",[this]{toggleAB();},true,false,12.f);
     const bool bypass=processor.snapshot().globalBypass;
@@ -849,8 +849,8 @@ void PedalLegendsAudioProcessorEditor::drawRouting(juce::Graphics& g) {
 void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
     // Same plugin canvas, richer tiled navigator: three columns x three rows.
     const R panel{321,120,958,685};
-    drawOverlay(g,panel,localized("PRESET LIBRARY 200"));
-    drawLabel(g,localized("200 FACTORY PRESETS"),R{383,141,748,41},30,ink,true);
+    drawOverlay(g,panel,localized("PRESET LIBRARY 400"));
+    drawLabel(g,localized("400 FACTORY PRESETS"),R{383,141,748,41},30,ink,true);
     drawLabel(g,localized("SEARCH PRESETS"),R{385,225,700,24},14,goldDark,true);
     for(int i=0;i<11;++i) {
         const int row=i/6,col=i%6;
@@ -860,11 +860,11 @@ void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
         button(g,rect,caption,[this,i]{browserCategory=i-1;browserOffset=0;},
                browserCategory==i-1,browserCategory==i-1,10.f);
     }
-    button(g,R{382,350,121,37},localized("ALL 200"),[this]{browserMode=-1;browserOffset=0;},
+    button(g,R{382,350,121,37},localized("ALL 400"),[this]{browserMode=-1;browserOffset=0;},
            browserMode==-1,browserMode==-1,12.f);
-    button(g,R{510,350,143,37},localized("SERIES 100"),[this]{browserMode=0;browserOffset=0;},
+    button(g,R{510,350,143,37},localized("SERIES 200"),[this]{browserMode=0;browserOffset=0;},
            browserMode==0,browserMode==0,12.f);
-    button(g,R{661,350,163,37},localized("PARALLEL 100"),[this]{browserMode=1;browserOffset=0;},
+    button(g,R{661,350,163,37},localized("PARALLEL 200"),[this]{browserMode=1;browserOffset=0;},
            browserMode==1,browserMode==1,12.f);
     std::vector<int> matches;
     const auto term=search.getText().trim();

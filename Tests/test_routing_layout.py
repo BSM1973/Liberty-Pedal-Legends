@@ -13,7 +13,9 @@ assert 'const float left=56.f,w=355.f,space=26.f;' in ui
 assert '177.f+row*294.f,w,281.f' in ui
 assert 'drawKnob(g,174,824,20' in ui and 'drawKnob(g,1280,824,19' in ui
 assert 'Screen::Routing' in ui and 'drawRouting(juce::Graphics& g)' in ui
-assert 'kSeriesPresetCount = 100' in presets and 'kParallelPresetCount = 100' in presets
+assert 'kOriginalSeriesPresetCount = 100' in presets and 'kOriginalParallelPresetCount = 100' in presets
+assert 'kAddedSeriesPresetCount = 100' in presets and 'kAddedParallelPresetCount = 100' in presets
+assert 'kFactoryPresetCount = kSeriesPresetCount + kParallelPresetCount' in presets
 assert 'routing_parallel' in processor and 'routing_blend' in processor and '_branch' in processor
 assert 'lane[0][ch]=wet[ch]' in engine and 'lane[1][ch]=wet[ch]' in engine
 assert 'float& signal=parallel?lane[branch][ch]:wet[ch]' in engine
