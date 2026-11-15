@@ -116,6 +116,8 @@ PedalLegendsAudioProcessorEditor::PedalLegendsAudioProcessorEditor(PedalLegendsA
     addAndMakeVisible(search);
     search.setVisible(false);
     snapshotA=p.snapshot();snapshotB=snapshotA;
+    gateA=gateB=p.gateEnabled();
+    thresholdA=thresholdB=p.gateThreshold();
     startTimerHz(15);
 }
 void PedalLegendsAudioProcessorEditor::updateSearch() {
@@ -151,10 +153,14 @@ void PedalLegendsAudioProcessorEditor::showModel(int model) {
 void PedalLegendsAudioProcessorEditor::toggleAB() {
     if(!viewingB) {
         snapshotA=processor.snapshot();
+        gateA=processor.gateEnabled();thresholdA=processor.gateThreshold();
         processor.restoreSettings(snapshotB);
+        processor.setGateEnabled(gateB);processor.setGateThreshold(thresholdB);
     } else {
         snapshotB=processor.snapshot();
+        gateB=processor.gateEnabled();thresholdB=processor.gateThreshold();
         processor.restoreSettings(snapshotA);
+        processor.setGateEnabled(gateA);processor.setGateThreshold(thresholdA);
     }
     viewingB=!viewingB;
     repaint();
@@ -407,6 +413,9 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
                    [this,i,on=stage.enabled]{processor.changeSlotEnabled(i,!on);},false,stage.enabled,9.5f);
             const R enclosure{box.getX()+37,box.getY()+39,box.getWidth()-74,202};
             drawPedal(g,enclosure,stage.model,stage);
+            // Clicking the enclosure opens the focused editor; the actual
+            // footswitch has a more specific hotspot added afterward.
+            hit(enclosure,[this,i]{selectSlot(i);});
             hit(R{enclosure.getCentreX()-26,enclosure.getBottom()-63,52,52},
                 [this,i,on=stage.enabled]{processor.changeSlotEnabled(i,!on);});
             button(g,R{box.getX()+38,box.getBottom()-34,96,26},"EDIT PEDAL",[this,i]{selectSlot(i);},false,false,11.f);

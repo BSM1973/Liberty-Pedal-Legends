@@ -40,6 +40,8 @@ private:
     std::unique_ptr<juce::FileChooser> fileChooser;
     pedal::Settings snapshotA{},snapshotB{};
     bool viewingB=false;
+    bool gateA=false,gateB=false;
+    float thresholdA=-66.f,thresholdB=-66.f;
     pedal::SlotSettings clipboardSlot{};
     bool hasClipboard=false;
     juce::String lastSavedPreset;
