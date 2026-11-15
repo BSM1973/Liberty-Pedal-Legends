@@ -108,9 +108,9 @@ PedalLegendsAudioProcessorEditor::PedalLegendsAudioProcessorEditor(PedalLegendsA
     setSize(1600,930);
     setWantsKeyboardFocus(true);
     currentLanguage=liberty_ui::safeLanguage(p.getUILanguage());
-    languageSelector.addItem(juce::String::fromUTF8("Français")),1);
+    languageSelector.addItem(juce::String::fromUTF8("Français"),1);
     languageSelector.addItem("English",2);
-    languageSelector.addItem(juce::String::fromUTF8("Español")),3);
+    languageSelector.addItem(juce::String::fromUTF8("Español"),3);
     languageSelector.setColour(juce::ComboBox::backgroundColourId,navy);
     languageSelector.setColour(juce::ComboBox::textColourId,goldLight);
     languageSelector.setColour(juce::ComboBox::outlineColourId,goldDark);
@@ -678,9 +678,7 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     const auto family=juce::String(std::string(md.family));
     if(historyTab==0) {
         labelSection('A',"L'HISTOIRE",256.f);
-        drawLabel(g,"Les effets de la famille "+family+juce::String::fromUTF8(" ont façonné le son de la guitare électrique. De l'époque ")+
-                  juce::String(std::string(md.era))+juce::String::fromUTF8(" à nos jours, les musiciens ont exploré leurs circuits, leur réponse et leurs couleurs. ") +
-                  title+juce::String::fromUTF8(" réinterprète cet héritage avec un traitement DSP original, pensé pour le jeu et la création musicale."),
+        drawLabel(g,localized("intro_1")+localized(familyText(md.family))+localized("intro_2")+juce::String(std::string(md.era))+localized("intro_3")+title+localized("intro_4"),
                   R{535,294,925,109},18,ink,true,juce::Justification::topLeft);
         labelSection('B',"INSPIRATIONS HISTORIQUES",418.f);
         drawLabel(g,juce::String::fromUTF8("Repères sonores et culturels, jamais une revendication de réplique officielle."),
@@ -688,22 +686,19 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
         surface(g,R{535,483,925,82},paper,goldLight,7.f,goldDark);
         drawLabel(g,historicalInfluence(model),R{556,495,880,29},17,ink,true,
                   juce::Justification::centredLeft,true);
-        drawLabel(g,juce::String::fromUTF8("Influence de famille · les marques et matériels cités sont leurs propres références."),
+        drawLabel(g,localized("history_disclaimer"),
                   R{558,530,871,25},13,ink,true);
         labelSection('C',juce::String::fromUTF8("CARACTÈRE SONORE"),589.f);
-        drawLabel(g,soundDescription(model)+juce::String::fromUTF8(" Les paramètres répondent au niveau d'entrée, au toucher et à l'ordre des effets. ")
-                  juce::String::fromUTF8("L'architecture garde une signature propre à chaque modèle."),R{535,631,920,72},17,ink,true,
+        drawLabel(g,localized(soundDescription(model))+localized("tone_suffix"),R{535,631,920,72},17,ink,true,
                   juce::Justification::topLeft);
         labelSection('D',"CONSEILS DE SOUND DESIGN",719.f);
-        drawLabel(g,juce::String::fromUTF8("Commencez par un mix modéré puis ajustez le gain et le caractère à votre guitare. ")
-                  juce::String::fromUTF8("Toutes les valeurs sont indicatives et rien n'est appliqué automatiquement."),
+        drawLabel(g,localized("tip_sound"),
                   R{535,755,921,51},15,ink,true,juce::Justification::topLeft);
     } else if(historyTab==1) {
         labelSection('A',"LA SIGNATURE SONORE",266.f);
         drawLabel(g,soundDescription(model),R{534,318,911,78},21,ink,true,juce::Justification::topLeft);
         labelSection('B',"LE COMPORTEMENT AUDIO",425.f);
-        drawLabel(g,juce::String::fromUTF8("Ce modèle traite réellement l'audio dans son slot, avec des réglages indépendants, ")
-                  juce::String::fromUTF8("la compensation de niveau et un bypass progressif. Les effets s'enchaînent dans l'ordre 1 à 8."),
+        drawLabel(g,localized("behavior"),
                   R{535,469,908,89},19,ink,true,juce::Justification::topLeft);
         labelSection('C',juce::String::fromUTF8("RÉGLAGES DU MODÈLE"),586.f);
         juce::String controls;
@@ -716,16 +711,13 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
                   R{535,688,913,60},16,ink,true);
     } else {
         labelSection('A',juce::String::fromUTF8("PREMIER RÉGLAGE"),270.f);
-        drawLabel(g,"Chargez "+title+" seul sur un emplacement, placez les autres effets en bypass "
-                  juce::String::fromUTF8("et ajustez les contrôles progressivement. Comparez les sons à niveau de sortie équivalent."),
+        drawLabel(g,localized("tip_start1")+title+localized("tip_start2"),
                   R{535,319,916,89},19,ink,true,juce::Justification::topLeft);
         labelSection('B',juce::String::fromUTF8("CHAÎNE DE TRAITEMENT"),447.f);
-        drawLabel(g,juce::String::fromUTF8("Testez différentes positions avant et après les pédales de saturation, puis ajoutez ")
-                  juce::String::fromUTF8("une modulation, un délai ou une réverbération selon votre intention musicale."),
+        drawLabel(g,localized("tip_chain"),
                   R{535,496,916,89},19,ink,true,juce::Justification::topLeft);
         labelSection('C',juce::String::fromUTF8("EXPÉRIENCES MUSICALES"),621.f);
-        drawLabel(g,juce::String::fromUTF8("Expérimentez avec un son clair, un riff dynamique et des accords longs. ")
-                  juce::String::fromUTF8("Ajustez le mix par slot pour retrouver de la définition sans perdre la couleur de l'effet."),
+        drawLabel(g,localized("tip_exp"),
                   R{535,666,918,93},19,ink,true,juce::Justification::topLeft);
     }
     drawLabel(g,juce::String::fromUTF8("40 fiches françaises  ·  références pédagogiques  ·  illustrations originales Liberty"),
