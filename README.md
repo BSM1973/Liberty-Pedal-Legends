@@ -1,5 +1,9 @@
 # PEDAL LEGENDS — Liberty Music Software
 
+## v0.4.1 - Luxury colour families (visual-only)
+
+80 original Liberty pedal enclosures now use **13 distinct family palettes**: olive green overdrive, forest-green distortion, burgundy fuzz, copper boost/preamp, rose-copper compression, olive-khaki EQ, honey/orange wah, yellow-ochre modulation, amber tremolo, caramel delay, warm-sand reverb, blue-violet pitch and petrol-blue experimental. Each model has a small deterministic finish variation; catalogue thumbnails use the same colour. Gold/cream typography remains unchanged and tested for >=4.5:1 contrast at the lightest gradient endpoint. No panel, pedal, knob, label or hitbox dimensions have changed. DSP, original model IDs, factory presets, series/parallel routing and all 80 history entries are untouched.
+
 **Vintage Soul. Modern Power.**
 
 ## v0.4.0 — 80 original effect models

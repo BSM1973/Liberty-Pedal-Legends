@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(PedalLegends VERSION 0.4.0 LANGUAGES C CXX)
+project(PedalLegends VERSION 0.4.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(PEDAL_LEGENDS_BUILD_TESTS "Build portable DSP tests" ON)
@@ -58,6 +58,7 @@ if(PEDAL_LEGENDS_BUILD_PLUGIN)
     Source/PluginEditor.cpp
     Source/PluginEditor.h
     Source/UILocalization.h
+    Source/PedalPalette.h
     Source/FactoryPresets.h)
   target_link_libraries(PedalLegends PRIVATE
     PedalLegendsDSP juce::juce_audio_utils juce::juce_dsp

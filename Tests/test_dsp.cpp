@@ -1,10 +1,13 @@
 #include "PedalDSP.h"
 #include "FactoryPresets.h"
+#include "PedalPalette.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <cstdint>
+#include <string_view>
 #include <set>
 #include <sstream>
 #include <vector>
@@ -31,6 +34,43 @@ std::vector<float> render(const Settings& setup, int rate=48000, int frames=size
 int main() {
     assert(catalog().size()==kModelCount);
     assert(kSlots==8);
+    // The 80 pedals have exactly 13 coherent visual families, with
+    // slight model-specific variants and deterministic, legible gold text.
+    static_assert(kPedalFamilyColours.size()==13,"The family palette must cover all effects");
+    assert(kModelCount==81); // 80 pedals plus Empty
+    std::set<std::uint32_t> baseColours;
+    std::set<std::string_view> colourFamilies;
+    auto relativeLuminance=[](std::uint32_t rgb) {
+        auto channel=[](double srgb) {
+            return srgb<=.04045?srgb/12.92:std::pow((srgb+.055)/1.055,2.4);
+        };
+        return .2126*channel(double((rgb>>16)&255u)/255.)+
+               .7152*channel(double((rgb>>8)&255u)/255.)+
+               .0722*channel(double(rgb&255u)/255.);
+    };
+    const double goldLuminance=relativeLuminance(0xF3D59Au);
+    const double creamLuminance=relativeLuminance(0xF3E7CBu);
+    for(const auto& entry:kPedalFamilyColours)
+        assert(baseColours.insert(entry.rgb).second); // 13 distinct base colours
+    for(int model=1;model<kModelCount;++model) {
+        const auto m=Model(model);
+        const auto family=info(m).family;
+        colourFamilies.insert(family);
+        assert(familyPedalRGB(family)!=0x283E55u);
+        const auto argb=pedalEnclosureARGB(m);
+        const auto light=pedalEnclosureTopARGB(m);
+        const auto dark=pedalEnclosureBottomARGB(m);
+        assert((argb>>24)==255u && (light>>24)==255u && (dark>>24)==255u);
+        const auto topLuminance=relativeLuminance(light&0xffffffu);
+        const auto goldContrast=(goldLuminance+.05)/(topLuminance+.05);
+        const auto creamContrast=(creamLuminance+.05)/(topLuminance+.05);
+        if(goldContrast<4.5||creamContrast<4.5) {
+            std::cerr << "Illegible enclosure palette: " << info(m).name
+                      << " gold=" << goldContrast << " cream=" << creamContrast << "\\n";
+            return 1;
+        }
+    }
+    assert(colourFamilies.size()==13);
     Settings base;
     auto original=render(base);
     for (int model=1;model<kModelCount;++model) {

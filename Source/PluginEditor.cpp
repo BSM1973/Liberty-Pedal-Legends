@@ -1,5 +1,6 @@
 #include "PluginEditor.h"
 #include "UILocalization.h"
+#include "PedalPalette.h"
 #include <algorithm>
 #include <cmath>
 #include <utility>
@@ -52,10 +53,8 @@ juce::String yearForModel(pedal::Model m) {
     }
 }
 juce::Colour pedalPaint(pedal::Model m) {
-    static constexpr unsigned shades[]={0xff1e4769,0xff145273,0xff254661,0xff32658c,
-                                        0xff1a4162,0xff45728c,0xff233952,0xff164b67};
-    const int index=std::clamp(int(m),1,pedal::kModelCount-1);
-    return juce::Colour(shades[(index*17+index/5)%8]);
+    // Every enclosure is coloured by its effect family, not randomly by ID.
+    return juce::Colour(pedal::pedalEnclosureARGB(m));
 }
 juce::String soundDescription(pedal::Model m) {
     const auto& record=pedal::info(m);
@@ -364,7 +363,11 @@ void PedalLegendsAudioProcessorEditor::drawPedal(juce::Graphics& g,R r,pedal::Mo
     if(model==pedal::Model::Empty)return;
     const auto paint=pedalPaint(model);
     g.setColour(midnight.withAlpha(.8f));g.fillRoundedRectangle(r.translated(5.f,8.f),15.f);
-    g.setGradientFill(juce::ColourGradient(paint.brighter(.25f),r.getTopLeft(),paint.darker(.4f),r.getBottomRight(),false));
+    // A controlled brushed-metal gradient keeps the unchanged gold/cream lettering
+    // readable even on yellow-ochre modulation and warm sand reverb finishes.
+    g.setGradientFill(juce::ColourGradient(
+        juce::Colour(pedal::pedalEnclosureTopARGB(model)),r.getTopLeft(),
+        juce::Colour(pedal::pedalEnclosureBottomARGB(model)),r.getBottomRight(),false));
     g.fillRoundedRectangle(r,13.f);
     g.setColour(goldDark);g.drawRoundedRectangle(r.reduced(2.f),12.f,2.f);
     g.setColour(goldLight.withAlpha(.38f));g.drawRoundedRectangle(r.reduced(5.f),10.f,.9f);
@@ -946,8 +949,10 @@ void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
         const auto& item=pedal::info(pedal::Model(i));
         const auto r=R{277+float(col)*344.f,420+float(row)*79.f,326,67};
         surface(g,r,paper,cream,8.f,goldDark);
-        g.setGradientFill(juce::ColourGradient(pedalPaint(pedal::Model(i)).brighter(.3f),
-                               r.getTopLeft(),pedalPaint(pedal::Model(i)).darker(.3f),r.getBottomRight(),false));
+        // Library thumbnail is the exact same family finish as its pedal body.
+        g.setGradientFill(juce::ColourGradient(
+            juce::Colour(pedal::pedalEnclosureTopARGB(pedal::Model(i))),r.getTopLeft(),
+            juce::Colour(pedal::pedalEnclosureBottomARGB(pedal::Model(i))),r.getBottomRight(),false));
         g.fillRoundedRectangle(R{r.getX()+8,r.getY()+9,58,49},7.f);
         g.setColour(gold);g.drawRoundedRectangle(R{r.getX()+8,r.getY()+9,58,49},6.f,1.5f);
         drawLabel(g,juce::String(std::string(item.name)),R{r.getX()+79,r.getY()+7,243,29},20,ink,true,
