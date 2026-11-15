@@ -68,7 +68,47 @@ const std::array<ModelInfo, kModelCount>& catalog() noexcept {
         {Model::OctaveCrown,"Octave Crown","Pitch / Octave","1970s",0x857453,{"OCT UP","OCT DOWN","TONE","MIX"},{.45f,.34f,.64f,.7f}},
         {Model::SubmarineVoice,"Submarine Voice","Pitch / Octave","1980s",0x4a6b78,{"SUB","ATTACK","TONE","MIX"},{.65f,.35f,.45f,.8f}},
         {Model::TimeGarden,"Time Garden","Experimental","2020s",0x668b7b,{"RATE","DELAY","DRIFT","MIX"},{.28f,.48f,.5f,.6f}},
-        {Model::InfiniteDrift,"Infinite Drift","Experimental","2020s",0x77739a,{"SPEED","FEED","FILTER","MIX"},{.38f,.52f,.55f,.55f}}
+        {Model::InfiniteDrift,"Infinite Drift","Experimental","2020s",0x77739a,{"SPEED","FEED","FILTER","MIX"},{.38f,.52f,.55f,.55f}},
+        {Model::NeoClassic250,"Neo Classic Push","Overdrive","1970s",0x617d91,{"BOOST","BITE","RESPONSE","LEVEL"},{0.440f,0.560f,0.630f,0.550f},"Yngwie Malmsteen","Préamplificateur DOD Overdrive 250, utilisé pour pousser un ampli saturé dans le jeu néoclassique.","Médiums incisifs, écrêtage asymétrique et réponse très rapide au médiator.","Commencez avec BOOST au tiers, puis ajustez BITE selon la guitare."},
+        {Model::SapphireValve,"Sapphire Valve","Overdrive","1980s",0xa48455,{"GAIN","BODY","TOUCH","LEVEL"},{0.480f,0.500f,0.600f,0.520f},"Steve Vai","Famille des overdrives Ibanez Tube Screamer et des saturations douces de scène.","Sustain chantant et médiums concentrés sans effacer les attaques.","Réglez un gain modéré avant une distorsion pour conserver l’articulation."},
+        {Model::MercuryNine,"Mercury Nine","Overdrive","2000s",0x3e708b,{"GAIN","EDGE","SING","LEVEL"},{0.480f,0.530f,0.580f,0.470f},"Joe Satriani","Pédales VOX Ice 9 : référence à la famille des overdrives expressives.","Médiums souples et compression sensible à la dynamique.","Augmentez SING pour le legato, en gardant un niveau d’entrée raisonnable."},
+        {Model::FingerstyleGlow,"Fingerstyle Glow","Overdrive","1980s",0x73658e,{"DRIVE","PRESENCE","CLEAN","LEVEL"},{0.250f,0.580f,0.760f,0.520f},"Mark Knopfler","Son clair et léger crunch adapté au jeu aux doigts popularisé par Mark Knopfler.","Transitoires préservées, léger grain et excellente séparation des notes.","Gardez CLEAN élevé pour les accords pincés et les doubles notes."},
+        {Model::CopperContours,"Copper Contours","Overdrive","1990s",0x566c58,{"DRIVE","MIDS","SAG","LEVEL"},{0.420f,0.540f,0.370f,0.520f},"General","Famille boutique des overdrives dynamiques, sans copie de circuit particulier.","Saturation souple avec effet de sag dépendant du niveau.","Dosez SAG sur les rythmiques blues et laissez respirer le signal."},
+        {Model::LegacyOrange,"Legacy Orange","Distortion","1980s",0x8e645b,{"DIST","FILTER","EDGE","LEVEL"},{0.620f,0.500f,0.590f,0.480f},"Steve Vai","Distorsions compactes Boss DS-1 associées à plusieurs périodes de Steve Vai.","Écrêtage ferme et aigu expressif avec bas du spectre contrôlé.","Baissez FILTER avant d’augmenter DIST pour les solos précis."},
+        {Model::CosmicSatch,"Cosmic Lead","Distortion","2000s",0x407f8d,{"GAIN","TONE","MORE","LEVEL"},{0.530f,0.550f,0.460f,0.480f},"Joe Satriani","Pédale VOX Satchurator : inspiration générale des saturations polyvalentes.","Deux étages de gain et accent sur les harmoniques hautes.","Utilisez MORE avec mesure pour garder la dynamique de la main droite."},
+        {Model::RisingForce,"Neo Fire Lead","Distortion","1980s",0xb78a58,{"BOOST","TIGHT","HARMONICS","LEVEL"},{0.500f,0.710f,0.590f,0.480f},"Yngwie Malmsteen","Overdrive DOD 250 devant un amplificateur poussé, esthétique néoclassique.","Grain serré et réponse nerveuse favorisant les notes rapides.","Montez TIGHT pour les arpèges rapides, en complément d’un ampli saturé."},
+        {Model::RoyalHarmony,"Royal Harmony","Distortion","1970s",0x617d91,{"GAIN","TREBLE","STACK","LEVEL"},{0.430f,0.670f,0.480f,0.490f},"Brian May","Treble booster historique devant un VOX AC30 dans la tradition de Brian May.","Saturation centrée sur le médium-aigu et harmonies chantantes.","Contrôlez TREBLE pour les guitares harmonisées en plusieurs couches."},
+        {Model::TitaniumRiff,"Titanium Riff","Distortion","2020s",0xa48455,{"GAIN","SCOOP","ATTACK","LEVEL"},{0.620f,0.520f,0.720f,0.430f},"General","Famille des distorsions modernes à gain élevé pour riffs précis.","Graves filtrés, médiums agressifs et attaques fermes.","Réglez ATTACK assez haut pour des riffs rapides en cordes graves."},
+        {Model::OctaviaHalo,"Octave Halo","Fuzz","1970s",0x3e708b,{"FUZZ","OCTAVE","TONE","LEVEL"},{0.640f,0.560f,0.570f,0.490f},"General","Fuzz à octave supérieure issue des effets psychédéliques historiques.","Harmoniques rectifiées et grain très expressif.","Essayez le micro manche au-dessus de la douzième case."},
+        {Model::WoollyMuff,"Sustain Cloud","Fuzz","1970s",0x73658e,{"FUZZ","MIDS","SUSTAIN","LEVEL"},{0.580f,0.540f,0.690f,0.460f},"General","Famille des fuzz à sustain multi-étages de type Big Muff.","Corps épais et longue tenue des notes.","Relevez MIDS pour les solos et réduisez-le sur les accords."},
+        {Model::GermaniumMist,"Germanium Mist","Fuzz","1970s",0x566c58,{"FUZZ","BIAS","CLEANUP","LEVEL"},{0.630f,0.460f,0.520f,0.460f},"General","Famille des fuzz au germanium populaires au début des années 1970.","Biais asymétrique, saturation rugueuse et nettoyage au volume.","Baissez le volume de la guitare et ajustez CLEANUP."},
+        {Model::SiliconRazor,"Silicon Razor","Fuzz","1990s",0x8e645b,{"FUZZ","GATE","EDGE","LEVEL"},{0.710f,0.420f,0.640f,0.500f},"General","Fuzz au silicium modernes à coupure franche du signal.","Grain mordant avec effet de gate sensible au jeu.","Montez GATE pour des arrêts rythmiques très nets."},
+        {Model::NebulaSquare,"Nebula Square","Fuzz","2020s",0x407f8d,{"DRIVE","PULSE","FILTER","LEVEL"},{0.600f,0.480f,0.500f,0.440f},"General","Pedales fuzz contemporaines mêlant écrêtage et oscillation sonore.","Saturation presque carrée avec texture pulsée.","Faites varier PULSE sur des riffs synthétiques et FILTER sur les basses."},
+        {Model::RegalTreble,"Regal Treble","Boost / Preamp","1970s",0xb78a58,{"BOOST","BITE","BODY","LEVEL"},{0.490f,0.630f,0.360f,0.540f},"Brian May","Dallas Rangemaster et tradition du treble booster utilisé avec un AC30.","Accent des aigus et boost musical du signal d’entrée.","Placez avant un overdrive et limitez BODY pour contrôler les graves."},
+        {Model::ClassicalPush,"Classical Push","Boost / Preamp","1970s",0x617d91,{"PUSH","FOCUS","AIR","LEVEL"},{0.490f,0.650f,0.550f,0.490f},"Yngwie Malmsteen","DOD 250 comme étage de poussée devant un amplificateur à lampes.","Attaque rapide et haut-médium mis en évidence.","Utilisez PUSH comme booster plutôt que comme distorsion unique."},
+        {Model::CrystalFingers,"Crystal Fingers","Boost / Preamp","1980s",0xa48455,{"GAIN","LOW","SPARKLE","LEVEL"},{0.250f,0.520f,0.600f,0.480f},"Mark Knopfler","Preamplification claire pour le jeu aux doigts de Mark Knopfler.","Relief des attaques et extrême transparence.","Laissez GAIN bas et augmentez SPARKLE juste assez pour la clarté."},
+        {Model::LegacyPresence,"Legacy Presence","Boost / Preamp","1990s",0x3e708b,{"GAIN","LOWCUT","BITE","LEVEL"},{0.420f,0.580f,0.570f,0.520f},"Steve Vai","Booster de lead médium-aigu pour les sons virtuoses de Steve Vai.","Graves nettoyés et articulation de la mélodie.","Augmentez LOWCUT pour raffermir les longues phrases lead."},
+        {Model::VelvetPreamp,"Velvet Preamp","Boost / Preamp","2000s",0x73658e,{"GAIN","WARMTH","AIR","LEVEL"},{0.390f,0.550f,0.450f,0.500f},"Joe Satriani","Préamplis boutique pour un son lead souple à la Joe Satriani.","Harmoniques douces avec un peu d’air dans le haut.","Ajoutez un delay discret et évitez de saturer la sortie."},
+        {Model::FingerPulse,"Finger Pulse","Compressor","1980s",0x566c58,{"THRESH","ATTACK","RELEASE","LEVEL"},{0.480f,0.700f,0.520f,0.520f},"Mark Knopfler","Compression de studio utilisée pour équilibrer les nuances du fingerstyle.","Action transparente préservant le claquement des doigts.","Allongez ATTACK pour garder les accents naturels."},
+        {Model::GlassLimiter,"Glass Limiter","Compressor","2000s",0x8e645b,{"THRESH","RATIO","KNEE","LEVEL"},{0.540f,0.620f,0.700f,0.530f},"Steve Vai","Limiteurs transparents contemporains pour guitare claire.","Contrôle de crête progressif sans écraser les accords.","Réduisez THRESH jusqu’à stabiliser les accords sans pompage."},
+        {Model::LeadSustain,"Lead Sustain","Compressor","1990s",0x407f8d,{"SUSTAIN","RELEASE","BLEND","LEVEL"},{0.550f,0.580f,0.580f,0.500f},"Joe Satriani","Famille des compresseurs de sustain utilisés en studio sur les solos.","Maintien doux de la note avec mélange de l’attaque d’origine.","Mélangez un peu de signal sec pour garder le premier transitoire."},
+        {Model::NeoAttack,"Neo Attack","Compressor","1980s",0xb78a58,{"PUNCH","SPEED","BODY","LEVEL"},{0.550f,0.510f,0.580f,0.490f},"Yngwie Malmsteen","Dynamique rapide des guitares virtuoses à haut gain.","Accent de transitoire et réponse ferme sur le médiator.","Gardez SPEED à mi-course sur les passages rapides."},
+        {Model::RoyalComp,"Royal Comp","Compressor","1970s",0x617d91,{"SQUASH","ATTACK","WARMTH","LEVEL"},{0.370f,0.590f,0.520f,0.490f},"Brian May","Compression vintage et guitares rock enregistrées en couches.","Chaleur et tenue sans bruit ajouté.","Placez en amont d’une harmonie de guitares pour lier les notes."},
+        {Model::HorsieSweep,"Expressive Sweep","Wah / Envelope","1990s",0xa48455,{"POSITION","Q","DRIVE","MIX"},{0.530f,0.570f,0.430f,0.820f},"Steve Vai","Morley Bad Horsie : famille des wahs optiques expressives associées à Steve Vai.","Balayage vocal et large plage de résonance.","Manipulez POSITION à la souris pendant les notes tenues."},
+        {Model::CosmicWah,"Cosmic Wah","Wah / Envelope","2000s",0x3e708b,{"POSITION","FORMANT","BITE","MIX"},{0.520f,0.490f,0.480f,0.750f},"Joe Satriani","VOX Big Bad Wah : deux caractères de balayage inspirent ce filtre original.","Deux zones formantiques pour un timbre de voix expressif.","Gardez FORMANT modéré et modulez POSITION avec les phrases."},
+        {Model::VintageCrying,"Vintage Crying","Wah / Envelope","1970s",0x73658e,{"WAH","RESON","BASS","MIX"},{0.510f,0.650f,0.400f,0.890f},"General","Vox et Cry Baby : grandes familles de wahs classiques.","Accent nasal réglable avec bas-médium atténué.","Balayez lentement WAH dans les notes longues."},
+        {Model::FunkPrism,"Funk Prism","Wah / Envelope","1980s",0x566c58,{"SENSE","Q","RELEASE","MIX"},{0.550f,0.500f,0.570f,0.680f},"Mark Knopfler","Filtres enveloppes touch-sensitive populaires dans les rythmiques funk.","Accent vocal déclenché par les attaques de la guitare.","Jouez des ghost notes en augmentant SENSE progressivement."},
+        {Model::TalkBoxish,"Talk Boxish","Wah / Envelope","1990s",0x8e645b,{"VOWEL","MOTION","EDGE","MIX"},{0.530f,0.590f,0.450f,0.680f},"General","Filtres de formants et esthétique talk-box, sans microphone ni analyse vocale.","Mouvement de voyelles obtenu par deux filtres complémentaires.","Réglez MOTION lentement pour des arpèges animés."},
+        {Model::StereoDimension,"Stereo Dimension","Modulation","1980s",0x407f8d,{"RATE","WIDTH","COLOUR","MIX"},{0.260f,0.690f,0.450f,0.480f},"Steve Vai","Chorus stéréo de studio et rack d’effets utilisés sur les sons clairs virtuoses.","Élargissement doux avec modulation de canaux déphasés.","Réduisez MIX pour conserver la précision au centre."},
+        {Model::PhaseGarden,"Phase Garden","Modulation","1970s",0xb78a58,{"RATE","STAGES","FEED","MIX"},{0.320f,0.600f,0.390f,0.550f},"General","Phasers analogiques à quatre étages de la grande époque des stompboxes.","Encoches mobiles et chaleur du retour modulé.","Gardez FEED modéré sur les accords saturés."},
+        {Model::LiquidRotary,"Liquid Rotary","Modulation","1970s",0x617d91,{"SPEED","HORN","DRUM","MIX"},{0.320f,0.580f,0.530f,0.590f},"Brian May","Modulations de haut-parleur rotatif dans le rock harmonisé.","Effet Doppler et mouvement de timbre dans les deux canaux.","Mettez HORN lent pour renforcer des harmonies superposées."},
+        {Model::AquaVibrato,"Aqua Vibrato","Modulation","1980s",0xa48455,{"RATE","DEPTH","TONE","MIX"},{0.290f,0.600f,0.510f,0.700f},"Mark Knopfler","Vibrato analogique et effets de guitare clairs vintage.","Modulation de hauteur sans hachage brutal du volume.","Utilisez DEPTH faible pour un léger scintillement."},
+        {Model::GoldenFlange2,"Golden Flange II","Modulation","1990s",0x3e708b,{"RATE","REGEN","SWEEP","MIX"},{0.330f,0.430f,0.670f,0.550f},"Joe Satriani","Flangers à feedback dosé, populaires dans les sons lead modernes.","Balayage harmonique prononcé avec résonance contrôlée.","Baissez REGEN sur les solos rapides et longues réverbérations."},
+        {Model::TimeMachine,"Chrono Voyager","Delay / Echo","2000s",0x73658e,{"TIME","FEEDBACK","WARMTH","MIX"},{0.400f,0.470f,0.570f,0.370f},"Joe Satriani","VOX Time Machine : inspiration de la famille des delays mélodiques.","Répétitions filtrées chaleureuses avec léger flottement.","Laissez MIX sous la moitié pour soutenir les solos."},
+        {Model::DualOrbit,"Dual Orbit","Delay / Echo","2010s",0x566c58,{"TIME","OFFSET","FEEDBACK","MIX"},{0.450f,0.600f,0.410f,0.400f},"Steve Vai","Delays stéréo décalés souvent utilisés dans les grands sons lead.","Échos alternés et largeur rythmique.","Utilisez OFFSET vers le milieu pour le dialogue gauche/droite."},
+        {Model::CounterpointEight,"Counterpoint Eight","Delay / Echo","1980s",0x8e645b,{"TIME","SPREAD","TONE","MIX"},{0.180f,0.550f,0.620f,0.350f},"Yngwie Malmsteen","Délais stéréo très courts évoqués par Yngwie Malmsteen en interview.","Dédoublement bref et sensation contrapuntique.","Débutez vers 8 à 35 ms pour un renforcement discret."},
+        {Model::VelvetSlap,"Velvet Slap","Delay / Echo","1980s",0x407f8d,{"TIME","TAP","DARK","MIX"},{0.250f,0.430f,0.600f,0.300f},"Mark Knopfler","Slapback vintage associé aux sonorités claires et articulées.","Deux réflexions filtrées, courtes et discrètes.","Réglez TIME bas et MIX entre un quart et un tiers."},
+        {Model::ReverseBloom,"Reverse Bloom","Delay / Echo","2020s",0xb78a58,{"TIME","SWELL","FEEDBACK","MIX"},{0.420f,0.650f,0.330f,0.480f},"General","Delays inversés et effets modernes de gonflement sonore.","Attaques d’échos progressives et fondu temporel.","Essayez des accords lents avec FEEDBACK médian."}
     }};
     return c;
 }
@@ -541,6 +581,316 @@ float Engine::processOne(Model model, ChannelState& s, int channel, float x,
             s.delay.write(saturate(x*.55f+fed*(.24f+b*.68f)));
             y=(1.f-d)*x+d*fed;
             break;
+        }
+        // Forty original Liberty designs. These are separate processing paths;
+        // manufacturer/guitarist references in catalog() are pedagogical only.
+        case Model::NeoClassic250: {
+            const float src=hp(x,s.lp1,100.f+b*260.f,sr_);
+            const float driven=src*(1.6f+22.f*a);
+            const float pos=saturate(driven*1.3f),neg=saturate(driven*.79f);
+            const float edge=lp(pos*.65f+neg*.35f,s.lp2,1300.f+c*5800.f,sr_);
+            y=edge*(.2f+d*1.5f); break;
+        }
+        case Model::SapphireValve: {
+            const float src=lp(hp(x,s.lp1,240.f,sr_),s.lp2,4200.f,sr_);
+            const float driven=src*(1.f+19.f*a);
+            const float asymmetric=shaped(driven,1.9f,(b-.5f)*.16f);
+            const float smooth=lp(asymmetric,s.lp3,1900.f+5300.f*c,sr_);
+            y=smooth*(.35f+d*1.4f);break;
+        }
+        case Model::MercuryNine: {
+            const float env=lp(std::abs(x),s.env,13.f+c*80.f,sr_);
+            const float src=hp(x,s.lp1,100.f,sr_)*(1.f+26.f*a)/(1.f+env*13.f*c);
+            const float soft=shaped(src,2.3f,(b-.5f)*.23f);
+            const float presence=hp(soft,s.lp2,1600.f,sr_);
+            y=(soft*.72f+presence*.23f)*(.3f+d*1.4f);break;
+        }
+        case Model::FingerstyleGlow: {
+            const float bass=lp(x,s.lp1,290.f,sr_);
+            const float clarity=hp(x,s.lp2,1800.f,sr_);
+            const float clean=.66f+c*.34f;
+            const float grit=saturate((x-bass*.23f)*(1.f+8.f*a));
+            y=(clean*x+(1.f-clean)*grit+clarity*(b-.5f)*.18f)*(.35f+d*1.2f);break;
+        }
+        case Model::CopperContours: {
+            const float envelope=lp(std::abs(x),s.env,8.f+c*55.f,sr_);
+            const float sag=1.f/(1.f+c*envelope*9.f);
+            const float mid=hp(x,s.lp1,95.f,sr_);
+            const float body=lp(mid,s.lp2,1400.f+b*5600.f,sr_);
+            y=shaped(body,1.f+a*19.f,sag*.09f)*sag*(.3f+d*1.3f);break;
+        }
+        case Model::LegacyOrange: {
+            const float pre=hp(x,s.lp1,95.f,sr_)*(1.f+a*38.f);
+            const float clip=clamp(pre,-.38f,.40f);
+            const float base=lp(clip,s.lp2,900.f+b*5500.f,sr_);
+            const float bite=hp(clip,s.lp3,1800.f,sr_);
+            y=(base*.88f+bite*c*.4f)*(.24f+d*1.3f);break;
+        }
+        case Model::CosmicSatch: {
+            const float src=hp(x,s.lp1,75.f,sr_);
+            const float pre=saturate(src*(1.f+a*15.f));
+            const float more=shaped(pre,1.25f+c*3.75f,.035f);
+            const float tone=lp(more,s.lp2,800.f+b*8000.f,sr_);
+            y=tone*(.25f+d*1.45f);break;
+        }
+        case Model::RisingForce: {
+            const float tight=hp(x,s.lp1,100.f+b*460.f,sr_);
+            const float clip=shaped(tight,2.f+a*35.f,.05f);
+            const float rich=clip*.77f + hp(clip,s.lp2,2100.f,sr_)*c*.29f;
+            y=lp(rich,s.lp3,4000.f+c*4200.f,sr_)*(.28f+d*1.3f);break;
+        }
+        case Model::RoyalHarmony: {
+            const float boost=hp(x,s.lp1,360.f+b*1100.f,sr_);
+            const float pre=saturate((boost*.75f+x*.22f)*(1.f+18.f*a));
+            const float stack=saturate(pre*(1.2f+c*5.f));
+            y=lp(stack,s.lp2,2500.f+b*4100.f,sr_)*(.27f+d*1.35f);break;
+        }
+        case Model::TitaniumRiff: {
+            const float tight=hp(x,s.lp1,95.f+c*520.f,sr_);
+            const float stage=clamp(tight*(1.8f+35.f*a),-.52f,.52f);
+            const float mid=lp(stage,s.lp2,820.f,sr_);
+            const float top=hp(stage,s.lp3,2000.f,sr_);
+            y=(stage-b*mid*.67f+top*c*.23f)*(.3f+d*1.15f);break;
+        }
+        case Model::OctaviaHalo: {
+            const float filtered=hp(x,s.lp1,120.f,sr_);
+            const float fuzz=clamp(filtered*(1.f+42.f*a),-.8f,.8f);
+            const float octave=2.f*std::abs(fuzz)-.7f;
+            const float blended=octave*b+fuzz*(1.f-b);
+            y=lp(saturate(blended*2.f),s.lp2,620.f+6200.f*c,sr_)*(.2f+d);break;
+        }
+        case Model::WoollyMuff: {
+            const float src=hp(x,s.lp1,45.f,sr_);
+            const float first=saturate(src*(2.f+18.f*a));
+            const float second=clamp(first*(1.f+7.f*c),-.6f,.62f);
+            const float low=lp(second,s.lp2,480.f,sr_);
+            const float high=hp(second,s.lp3,2000.f,sr_);
+            y=(second+.5f*(b-.5f)*low+.3f*(b-.5f)*high)*(.25f+d);break;
+        }
+        case Model::GermaniumMist: {
+            const float src=lp(x,s.lp1,5400.f,sr_);
+            const float bias=(b-.5f)*.37f;
+            const float gain=1.f+25.f*a;
+            const float clean=src*(.24f+.57f*c);
+            const float fuzz=shaped(src,gain,bias)*(1.f-.22f*c);
+            y=lp(fuzz+clean*.35f,s.lp2,1100.f+3900.f*c,sr_)*(.2f+d*1.15f);break;
+        }
+        case Model::SiliconRazor: {
+            const float fed=hp(x,s.lp1,75.f,sr_)*(1.f+65.f*a);
+            const float folded=std::sin(clamp(fed,-12.f,12.f)*1.2f);
+            const float env=lp(std::abs(x),s.env,80.f,sr_);
+            const float gate=env>(.002f+b*.035f)?1.f:0.f;
+            y=lp(folded,s.lp2,1200.f+c*6800.f,sr_)*gate*(.24f+d);break;
+        }
+        case Model::NebulaSquare: {
+            const float phase=cycle(s.phase,.35f+b*10.f,sr_);
+            const float duty=phase<.18f+.5f*b?1.f:.76f;
+            const float filtered=lp(x,s.lp1,1100.f+c*7500.f,sr_);
+            const float folded=std::tanh(filtered*(3.f+40.f*a));
+            const float square=folded>0.f?.68f:-.68f;
+            y=lp(square*duty,s.lp2,700.f+c*4200.f,sr_)*(.18f+d*1.4f);break;
+        }
+        case Model::RegalTreble: {
+            const float bright=hp(x,s.lp1,440.f+b*1400.f,sr_);
+            const float body=lp(x,s.lp2,480.f,sr_);
+            y=saturate((bright*(.65f+a*4.5f)+body*c*.25f))*(.3f+d*1.4f);break;
+        }
+        case Model::ClassicalPush: {
+            const float focus=hp(x,s.lp1,85.f+b*370.f,sr_);
+            const float high=hp(focus,s.lp2,2000.f,sr_);
+            y=shaped(focus+high*c*.27f,1.f+a*9.f,.02f)*(.44f+d*1.35f);break;
+        }
+        case Model::CrystalFingers: {
+            const float low=lp(x,s.lp1,260.f,sr_);
+            const float air=hp(x,s.lp2,2200.f,sr_);
+            const float tone=x+(b-.5f)*.5f*low+c*.25f*air;
+            y=saturate(tone*(1.f+a*1.5f))*(.4f+d*1.2f);break;
+        }
+        case Model::LegacyPresence: {
+            const float tighten=hp(x,s.lp1,60.f+420.f*b,sr_);
+            const float air=hp(tighten,s.lp2,1800.f,sr_);
+            y=shaped(tighten+air*c*.6f,1.f+a*6.f,.025f)*(.34f+d*1.4f);break;
+        }
+        case Model::VelvetPreamp: {
+            const float bass=lp(x,s.lp1,330.f,sr_);
+            const float overtone=hp(x,s.lp2,2600.f,sr_);
+            const float x2=(x+bass*b*.45f+overtone*c*.15f)*(1.f+a*5.f);
+            y=lp(saturate(x2),s.lp3,4000.f+c*5000.f,sr_)*(.34f+d*1.3f);break;
+        }
+        case Model::FingerPulse: {
+            const float level=std::abs(x);
+            const float time=level>s.env?.004f+.052f*b:.08f+.42f*c;
+            const float coeff=std::exp(-1.f/(float(sr_)*time));
+            s.env+= (1.f-coeff)*(level-s.env);
+            const float attenuation=1.f/(1.f+15.f*std::max(0.f,s.env-(.29f-.23f*a)));
+            y=x*attenuation*(.5f+d*1.25f);break;
+        }
+        case Model::GlassLimiter: {
+            const float env=lp(std::abs(x),s.env,160.f,sr_);
+            const float threshold=.34f-.30f*a;
+            const float ratio=2.f+18.f*b;
+            const float over=std::max(0.f,env-threshold);
+            const float knee=std::max(.02f,c*.2f);
+            y=x*std::exp(-over*ratio/(1.f+over/knee))*(.4f+d*1.35f);break;
+        }
+        case Model::LeadSustain: {
+            const float envelope=std::abs(x);
+            const float sec=envelope>s.env?.011f:.04f+b*.5f;
+            const float coeff=std::exp(-1.f/(float(sr_)*sec));
+            s.env+= (1.f-coeff)*(envelope-s.env);
+            const float compressed=x/(1.f+12.f*a*s.env)*2.2f;
+            y=((1.f-c)*x+c*compressed)*(.37f+d*1.2f);break;
+        }
+        case Model::NeoAttack: {
+            const float slow=lp(std::abs(x),s.env,13.f+b*75.f,sr_);
+            const float fast=lp(std::abs(x),s.lp1,130.f+370.f*b,sr_);
+            const float diff=clamp((fast-slow)*a*7.f,-.5f,.7f);
+            const float bass=lp(x,s.lp2,270.f,sr_);
+            y=(x*(1.f+diff)+bass*(c-.5f)*.35f)*(.3f+d*1.25f);break;
+        }
+        case Model::RoyalComp: {
+            const float peak=lp(std::abs(x),s.env,21.f+b*100.f,sr_);
+            const float gain=1.f/(1.f+8.f*a*std::max(0.f,peak-.12f));
+            const float warmth=lp(x,s.lp1,1700.f+c*5000.f,sr_);
+            y=(warmth*.3f+x*.7f)*gain*(.5f+d*1.2f);break;
+        }
+        case Model::HorsieSweep: {
+            const float hz=230.f*std::pow(15.f,a);
+            const float f=clamp(2.f*std::sin(pi*hz/float(sr_)),0.f,.83f);
+            const float q=1.7f+b*11.f;
+            const float hot=saturate(x*(1.f+5.f*c));
+            const float high=hot-s.lp2-s.lp1/q;
+            s.lp1=clamp(s.lp1+f*high,-5.f,5.f);
+            s.lp2=clamp(s.lp2+f*s.lp1,-5.f,5.f);
+            y=x*(1.f-d)+s.lp1*d*.78f;break;
+        }
+        case Model::CosmicWah: {
+            const float hz=310.f*std::pow(9.f,a);
+            const float q=2.f+b*13.f;
+            const float f1=clamp(2.f*std::sin(pi*hz/float(sr_)),0.f,.75f);
+            const float hot=saturate(x*(1.f+4.f*c));
+            const float high=hot-s.lp2-s.lp1/q;
+            s.lp1=clamp(s.lp1+f1*high,-5.f,5.f);
+            s.lp2=clamp(s.lp2+f1*s.lp1,-5.f,5.f);
+            const float second=lp(hot-s.lp2,s.lp3,500.f+hz*.5f,sr_);
+            y=(1.f-d)*x+d*(s.lp1*.7f+second*.23f);break;
+        }
+        case Model::VintageCrying: {
+            const float hz=330.f+3000.f*a*a;
+            const float t=clamp(2.f*std::sin(pi*hz/float(sr_)),0.f,.69f);
+            const float q=1.7f+b*15.f;
+            const float input=hp(x,s.lp3,100.f+c*260.f,sr_);
+            const float high=input-s.lp2-s.lp1/q;
+            s.lp1=clamp(s.lp1+t*high,-5.f,5.f);
+            s.lp2=clamp(s.lp2+t*s.lp1,-5.f,5.f);
+            y=x*(1.f-d)+d*s.lp1*.75f;break;
+        }
+        case Model::FunkPrism: {
+            const float envInput=std::abs(x);
+            const float duration=envInput>s.env?.001f:.035f+c*.28f;
+            const float coeff=std::exp(-1.f/(float(sr_)*duration));
+            s.env+= (1.f-coeff)*(envInput-s.env);
+            const float hz=270.f+3700.f*clamp(s.env*(1.f+28.f*a),0.f,1.f);
+            const float f=clamp(2.f*std::sin(pi*hz/float(sr_)),0.f,.7f);
+            const float high=x-s.lp2-s.lp1/(1.3f+8.f*b);
+            s.lp1=clamp(s.lp1+f*high,-4.f,4.f);
+            s.lp2=clamp(s.lp2+f*s.lp1,-4.f,4.f);
+            y=x*(1.f-d)+d*s.lp1*.9f;break;
+        }
+        case Model::TalkBoxish: {
+            const float ph=cycle(s.phase,.14f+b*5.f,sr_);
+            const float vowel=.5f+.5f*std::sin(tau*ph);
+            const float f1=450.f+a*1000.f+vowel*490.f;
+            const float f2=950.f+(1.f-a)*1400.f-vowel*270.f;
+            const float band1=hp(lp(x,s.lp1,f1+450.f,sr_),s.lp2,f1*.55f,sr_);
+            const float band2=lp(hp(x,s.lp3,f2*.62f,sr_),s.env,f2+550.f,sr_);
+            y=x*(1.f-d)+d*saturate((band1+band2*.45f)*(1.f+4.f*c));break;
+        }
+        case Model::StereoDimension: {
+            const float ph=cycle(s.phase,.12f+a*2.f,sr_);
+            const float lfo=std::sin(tau*(ph+channel*.5f));
+            const float ds=(.011f+.017f*b*(1.f+lfo))*float(sr_);
+            const float tap=s.delay.read(ds,s.age);
+            s.delay.write(lp(x,s.lp1,5500.f+c*4500.f,sr_));
+            y=(1.f-d)*x+d*(x*.55f+tap*.45f);break;
+        }
+        case Model::PhaseGarden: {
+            const float phase=cycle(s.phase,.07f+a*7.f,sr_);
+            const float hz=150.f+(.5f+.5f*std::sin(tau*phase))*(900.f+b*3200.f);
+            const float t=std::tan(pi*std::min(hz,float(sr_)*.28f)/float(sr_));
+            const float coeff=(1.f-t)/(1.f+t);
+            float stage=saturate(x+c*s.phaserFeedback*.52f);
+            for(float& z:s.phaser){const float next=-coeff*stage+z;z=stage+coeff*next;stage=next;}
+            s.phaserFeedback=stage;
+            y=(1.f-d)*x+d*(stage+x)*.55f;break;
+        }
+        case Model::LiquidRotary: {
+            const float phase=cycle(s.phase,.25f+a*6.f,sr_);
+            const float horn=std::sin(tau*(phase+channel*.5f));
+            const float drum=std::sin(tau*(phase*.65f+channel*.25f));
+            const float low=lp(x,s.lp1,600.f,sr_);
+            const float high=x-low;
+            const float ds=(.003f+.001f*b*(1.f+horn))*float(sr_);
+            const float delayed=s.delay.read(ds,s.age);
+            s.delay.write(high);
+            y=(1.f-d)*x+d*(low*(.75f+.25f*drum*c)+delayed*(.75f+.2f*horn));break;
+        }
+        case Model::AquaVibrato: {
+            const float ph=cycle(s.phase,.2f+a*5.f,sr_);
+            const float lfo=std::sin(tau*(ph+channel*.11f));
+            const float ds=(.009f+.005f*b*lfo)*float(sr_);
+            const float delayed=s.delay.read(ds,s.age);
+            s.delay.write(lp(x,s.lp1,2500.f+c*6800.f,sr_));
+            y=(1.f-d)*x+d*delayed;break;
+        }
+        case Model::GoldenFlange2: {
+            const float ph=cycle(s.phase,.045f+a*2.5f,sr_);
+            const float lfo=std::sin(tau*(ph+channel*.21f));
+            const float ds=(.0012f+.012f*c*(.5f+.5f*lfo))*float(sr_);
+            const float tap=s.delay.read(ds,s.age);
+            s.delay.write(saturate(x+(b-.5f)*1.2f*tap));
+            y=(1.f-d)*x+d*(x*.55f+tap*.55f);break;
+        }
+        case Model::TimeMachine: {
+            const float ph=cycle(s.phase,.3f,sr_);
+            const float wow=.0014f*std::sin(tau*ph);
+            const float delay=(.085f+1.25f*a+wow)*float(sr_);
+            const float delayed=s.delay.read(delay,s.age);
+            const float damp=lp(delayed,s.lp1,500.f+(1.f-c)*6100.f,sr_);
+            s.delay.write(saturate(x+damp*(.12f+.79f*b)));
+            y=(1.f-d)*x+d*damp;break;
+        }
+        case Model::DualOrbit: {
+            const float delay=(.1f+a*1.1f)*float(sr_);
+            const float offset=(channel==0?1.f:.48f+.9f*b);
+            const float tap=s.delay.read(delay*offset,s.age);
+            const float dark=lp(tap,s.lp1,1200.f+b*9000.f,sr_);
+            s.delay.write(saturate(x+dark*(.09f+.82f*c)));
+            y=(1.f-d)*x+d*dark;break;
+        }
+        case Model::CounterpointEight: {
+            const float delay=(.008f+.060f*a+channel*.034f*b)*float(sr_);
+            const float tap=s.delay.read(delay,s.age);
+            const float smooth=lp(tap,s.lp1,1500.f+c*8500.f,sr_);
+            s.delay.write(saturate(x+.26f*tap));
+            y=(1.f-d)*x+d*smooth*.85f;break;
+        }
+        case Model::VelvetSlap: {
+            const float delay=(.035f+.19f*a)*float(sr_);
+            const float first=s.delay.read(delay,s.age);
+            const float second=s.delay.read(delay*(1.25f+b*.6f),s.age);
+            const float dark=lp(first*.83f+second*.31f,s.lp1,500.f+(1.f-c)*5500.f,sr_);
+            s.delay.write(saturate(x+dark*.18f));
+            y=(1.f-d)*x+d*dark;break;
+        }
+        case Model::ReverseBloom: {
+            const float delay=(.09f+a*1.1f)*float(sr_);
+            const float tap=s.delay.read(delay,s.age);
+            const float env=lp(std::abs(tap),s.env,2.f+7.f*b,sr_);
+            const float swell=clamp(env*8.f,0.f,1.f);
+            const float soft=lp(tap,s.lp1,3500.f,sr_);
+            s.delay.write(saturate(x+soft*(.1f+c*.65f)));
+            y=(1.f-d)*x+d*soft*swell;break;
         }
         default: return x;
     }

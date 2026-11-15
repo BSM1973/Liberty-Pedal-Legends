@@ -60,7 +60,7 @@ inline const auto& dictionary() {
         add("ON","ACTIF","ON","ACTIVO");
         add("OFF","INACTIF","OFF","INACTIVO");
         add("• THE LIBERTY COLLECTION","LA COLLECTION LIBERTY","THE LIBERTY COLLECTION","COLECCIÓN LIBERTY");
-        add("40 ORIGINAL PEDALS","40 PÉDALES ORIGINALES","40 ORIGINAL PEDALS","40 PEDALES ORIGINALES");
+        add("80 ORIGINAL PEDALS","80 PÉDALES ORIGINALES","80 ORIGINAL PEDALS","80 PEDALES ORIGINALES");
         add("HISTORY & SOUND","HISTOIRE & SON","HISTORY & SOUND","HISTORIA Y SONIDO");
         add("EDIT PEDAL","ÉDITER","EDIT PEDAL","EDITAR");
         add("LIBRARY","BIBLIOTHÈQUE","LIBRARY","BIBLIOTECA");
@@ -84,7 +84,7 @@ inline const auto& dictionary() {
         add("PEDAL MIX","MIX PÉDALE","PEDAL MIX","MEZCLA PEDAL");
         add("PEDAL LEVEL","NIVEAU PÉDALE","PEDAL LEVEL","NIVEL PEDAL");
         add("VINTAGE SOUL  ·  MODERN POWER","ÂME VINTAGE - PUISSANCE MODERNE","VINTAGE SOUL - MODERN POWER","ALMA VINTAGE - POTENCIA MODERNA");
-        add("LIBERTY PEDAL LEGENDS  ·  40 ORIGINAL MODELS  ·  EIGHT SERIAL AUDIO STAGES","LIBERTY PEDAL LEGENDS - 40 MODÈLES - 8 ÉTAGES AUDIO EN SÉRIE","LIBERTY PEDAL LEGENDS - 40 MODELS - 8 SERIAL AUDIO STAGES","LIBERTY PEDAL LEGENDS - 40 MODELOS - 8 ETAPAS DE AUDIO EN SERIE");
+        add("LIBERTY PEDAL LEGENDS  ·  80 ORIGINAL MODELS  ·  EIGHT SERIAL AUDIO STAGES","LIBERTY PEDAL LEGENDS - 80 MODÈLES - 8 ÉTAGES AUDIO EN SÉRIE","LIBERTY PEDAL LEGENDS - 80 MODELS - 8 SERIAL AUDIO STAGES","LIBERTY PEDAL LEGENDS - 80 MODELOS - 8 ETAPAS DE AUDIO EN SERIE");
         add("LIBERTY MUSIC SOFTWARE   © 2026","LIBERTY MUSIC SOFTWARE (c) 2026","LIBERTY MUSIC SOFTWARE (c) 2026","LIBERTY MUSIC SOFTWARE (c) 2026");
         add("COMPRESSOR & LIMITER","COMPRESSEUR / LIMITEUR","COMPRESSOR & LIMITER","COMPRESOR / LIMITADOR");
         add("EQ & FILTER","ÉGALISEUR / FILTRE","EQ & FILTER","ECUALIZADOR / FILTRO");
@@ -121,7 +121,7 @@ inline const auto& dictionary() {
         add("Aucun réglage n'est appliqué","Aucun réglage n'est appliqué","No settings are applied","No se aplican ajustes");
         add("RETOUR À L'ÉDITEUR","RETOUR À L'ÉDITEUR","BACK TO EDITOR","VOLVER AL EDITOR");
         add("Illustration Liberty · lecture seule","Illustration Liberty - consultation","Liberty illustration - read-only","Ilustración Liberty - solo lectura");
-        add("EXPLORER LES 40 FICHES","PARCOURIR LES 40 FICHES","BROWSE 40 ENTRIES","EXPLORAR 40 FICHAS");
+        add("EXPLORER LES 80 FICHES","PARCOURIR LES 80 FICHES","BROWSE 80 ENTRIES","EXPLORAR 80 FICHAS");
         add("La consultation ne charge aucune pédale.","La consultation ne charge aucune pédale.","Browsing does not load a pedal.","Consultar no carga ningún pedal.");
         add("DANS VOTRE PÉDALIER","DANS VOTRE PÉDALIER","ON YOUR PEDALBOARD","EN TU PEDALERA");
         add("L'HISTOIRE","L'HISTOIRE","HISTORY","HISTORIA");
@@ -139,7 +139,7 @@ inline const auto& dictionary() {
         add("PREMIER RÉGLAGE","PREMIER RÉGLAGE","STARTING SETTINGS","AJUSTES INICIALES");
         add("CHAÎNE DE TRAITEMENT","CHAÎNE DE TRAITEMENT","SIGNAL CHAIN","CADENA DE EFECTOS");
         add("EXPÉRIENCES MUSICALES","EXPÉRIENCES MUSICALES","MUSICAL EXPERIMENTS","EXPERIMENTOS MUSICALES");
-        add("40 fiches françaises  ·  références pédagogiques  ·  illustrations originales Liberty","40 fiches - références pédagogiques - illustrations originales Liberty","40 entries - educational references - original Liberty artwork","40 fichas - referencias educativas - ilustraciones Liberty originales");
+        add("80 fiches françaises  ·  références pédagogiques  ·  illustrations originales Liberty","80 fiches - références pédagogiques - illustrations originales Liberty","80 entries - educational references - original Liberty artwork","80 fichas - referencias educativas - ilustraciones Liberty originales");
         add("VINTAGE SOUL. MODERN POWER.","ÂME VINTAGE. PUISSANCE MODERNE.","VINTAGE SOUL. MODERN POWER.","ALMA VINTAGE. POTENCIA MODERNA.");
         add("BIBLIOTHÈQUE DE PRESETS · 100 PRESETS D'USINE","BIBLIOTHÈQUE DE PRESETS - 100 PRESETS D'USINE","PRESET LIBRARY - 100 FACTORY PRESETS","BIBLIOTECA DE PRESETS - 100 PRESETS DE FÁBRICA");
         add("LE SON POUR CHAQUE ÉPOQUE","LE SON POUR CHAQUE ÉPOQUE","A SOUND FOR EVERY ERA","UN SONIDO PARA CADA ÉPOCA");
@@ -151,7 +151,7 @@ inline const auto& dictionary() {
         add("PRÉCÉDENT","PRÉCÉDENT","PREVIOUS","ANTERIOR");
         add("SUIVANT","SUIVANT","NEXT","SIGUIENTE");
         add("OUVRIR UN PRESET UTILISATEUR  (.plegends)","OUVRIR UN PRESET UTILISATEUR (.plegends)","OPEN USER PRESET (.plegends)","ABRIR PRESET DE USUARIO (.plegends)");
-        add("LA COLLECTION LIBERTY  ·  40 MODÈLES DSP","COLLECTION LIBERTY - 40 MODÈLES DSP","LIBERTY COLLECTION - 40 DSP MODELS","COLECCIÓN LIBERTY - 40 MODELOS DSP");
+        add("LA COLLECTION LIBERTY  ·  80 MODÈLES DSP","COLLECTION LIBERTY - 80 MODÈLES DSP","LIBERTY COLLECTION - 80 DSP MODELS","COLECCIÓN LIBERTY - 80 MODELOS DSP");
         add("Rechercher un modèle, une famille ou une époque","Rechercher un modèle, une famille ou une époque","Search model, family or era","Busca modelo, familia o época");
         add("pédales dans cette sélection","pédales dans cette sélection","pedals in this selection","pedales en esta selección");
         add("EMPLACEMENT VIDE","EMPLACEMENT VIDE","EMPTY SLOT","ESPACIO VACÍO");

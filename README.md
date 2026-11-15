@@ -2,40 +2,30 @@
 
 **Vintage Soul. Modern Power.**
 
-Clean-room, original project created from the supplied PEDAL LEGENDS specification (1973–2026). No other PEDAL LEGENDS implementation is imported.
+## v0.4.0 — 80 original effect models
 
-## v0.3.0 — true parallel A/B routing and 200 preset library
+PEDAL LEGENDS is a working real-time guitar / bass multi-effects plugin, not an instrument or an AU/VST host. This expansion preserves the original 40 model IDs, the eight slot DSP architecture, series / true parallel A+B routing, the 100+100 factory preset banks, and the 1600 × 930 reference UI coordinate system.
 
-- **APPROVED GRAPHIC GEOMETRY IS FROZEN:** JUCE canvas stays 1600×930; the original 2×4 pedalboard positions, pedal dimensions, four compact master knobs, colour identity and typography scale are not changed. All additions live in a separate ROUTING overlay and reworked PRESETS overlay.
-- New **ROUTING** tab beside PEDALBOARD, visible without hiding existing pedal graphics. Separate diagram of the entire 8-stage serial chain and a true two-lane parallel diagram, with arrows and each pedal's actual stage order.
-- In PARALLEL: input is split to independent branches A and B; each branch runs its assigned effects serially and both are mixed at output with a smooth A/B blend (unity-preserving linear summation). Click each node to move a pedal to the opposite lane. Empty lanes carry a direct signal. No additional hosted plugins or audio threads.
-- New host-automatable parameters: routing mode, eight per-slot branch assignments, and A/B blend. Routing is restored on preset recall, when saving user presets, and when reopening DAW projects. A/B snapshots preserve routing configuration too.
-- **200 complete factory presets**: original 100 series presets retain their order, names and tone parameters; 100 additional parallel presets distribute stages between A/B and have individual blend and level settings. All 10 existing musical categories are retained in both banks.
-- Preset browser reorganized into a refined 3×3 card grid with filters ALL 200 / SERIES 100 / PARALLEL 100, live search, category filtering, page navigation and current-preset indicator. The three supported UI languages are updated.
-- C++ audio checks validate series/parallel sonic differences, branch assignment, blend, stability, and all 200 presets; static UI regression tests guard the unmodified 1600×930 geometry and prevent new card/node overlaps.
+### Expansion (model numbers 41–80)
 
-## Interface localisation and text rendering (v0.2.1)
+- 5 overdrives: Neo Classic Push, Sapphire Valve, Mercury Nine, Fingerstyle Glow, Copper Contours
+- 5 distortions: Legacy Orange, Cosmic Lead, Neo Fire Lead, Royal Harmony, Titanium Riff
+- 5 fuzzes: Octave Halo, Sustain Cloud, Germanium Mist, Silicon Razor, Nebula Square
+- 5 boosts/preamps: Regal Treble, Classical Push, Crystal Fingers, Legacy Presence, Velvet Preamp
+- 5 compressors: Finger Pulse, Glass Limiter, Lead Sustain, Neo Attack, Royal Comp
+- 5 wah/envelope effects: Expressive Sweep, Cosmic Wah, Vintage Crying, Funk Prism, Talk Boxish
+- 5 modulations: Stereo Dimension, Phase Garden, Liquid Rotary, Aqua Vibrato, Golden Flange II
+- 5 delays: Chrono Voyager, Dual Orbit, Counterpoint Eight, Velvet Slap, Reverse Bloom
 
-- Correct JUCE Unicode rendering: every non-ASCII C++ UI literal uses explicit UTF-8 decoding; unsupported decorative glyphs are replaced by portable punctuation or vector icons. Accents (é, è, à, ñ) are preserved.
-- Native language selector in the free top-header gap, never touching presets, SAVE, A/B, BYPASS or audio meters. Available: Français (default), English, Español. Translations cover the board, editor, encyclopedia, navigation, effect families, preset categories and file dialogs; proprietary pedal and preset names remain unchanged.
-- Chosen language is stored with the AU/VST3 project state; loading an older project defaults to French. The language control is hidden behind modal views so it cannot overlap their contents.
-- v0.2.1 retained its original 100 series patches; the new parallel engine/bank is added separately in v0.3.0.
+Each new model has its own DSP case, controls, defaults, non-endorsement historical reference, tone description and suggested use. These are **original digital interpretations**. They are neither endorsed signature products nor circuit-verified hardware clones. Guitarist and hardware mentions are educational references only.
 
-## Current implementation
+The encyclopedia browse range and library model count have been extended to 80, and searching a name, era, guitar artist, or historical pedal family can find the relevant model. The three languages from the previous release remain available for UI navigation; the new extended editorial notes are currently authored in French, pending editorial translations to English and Spanish.
 
-- Independent real-time DSP engine with exactly **8 audio slots** supporting serial and true 2-lane parallel routing. Slot-by-slot bypass, model replacement, independent state/parameters, order swapping and master bypass.
-- **40 original effect models** with independently coded signal processing, across drive, distortion, fuzz, boost, compression, EQ, wah, modulation, tremolo, delay, reverb, monophonic octave synthesis and experimental.
-- **200 factory presets**, 100 series + 100 parallel, in 10 categories per bank; actual saved 8-slot settings with differing chains, levels and controls.
-- JUCE 8 AU/VST3 plugin source with host automation, project state recall, navigable browser, live search/category filters, peak meters, controls and editable graphical pedalboard.
-- New responsive **midnight-blue and gold editor** built around the approved three-screen design: 2×4 premium pedalboard, large focused editor, and read-only French pedal encyclopedia covering all 40 models. Layered gradients, brushed-metal pedal enclosures, gold rotary controls, and clear typography are drawn natively in JUCE. The generated design references are visual targets, not interactive images pasted over controls.
-- Historical notes with era, sonic family, general physical-instrument inspirations and sound-design advice. These are explicitly educational references, not circuit-accurate clones.
-- Searchable **40-model library** and **200-preset card browser**, direct preset loading, saved user files (`.plegends`) and A/B editor comparisons.
-- Per-slot MIX and LEVEL automation now changes real DSP output. New global stereo-linked noise gate with user threshold is optional and off by default.
-- Mono and stereo processing paths. Per-parameter smoothing and soft transitions on bypass/model selection. No allocation in the DSP process callback after `prepare()`.
+### Validation
 
-## Build
+Portable C++ DSP test suite: verify 80 model IDs, finite audio, independent processing, bypass, mono and stereo, sample rates, parallel branches and 200 original presets. UI text/routing tests check preservation of the existing panel geometry and 80-card access. Real AU/VST3 compilation and DAW load testing must be confirmed by the GitHub Actions results and in a DAW.
 
-Requirements: CMake 3.24+, C++17 compiler, network access to fetch JUCE 8.0.10 if not installed, macOS Xcode (AU+VST3) or Windows/MSVC (VST3).
+### Build
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPEDAL_LEGENDS_BUILD_PLUGIN=ON
@@ -43,24 +33,10 @@ cmake --build build --config Release --parallel 3
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Offline portable DSP tests, no JUCE required:
+Portable DSP tests without JUCE:
 
 ```sh
-cmake -S . -B build-dsp -DPEDAL_LEGENDS_BUILD_PLUGIN=OFF -DPEDAL_LEGENDS_BUILD_TESTS=ON
+cmake -S . -B build-dsp -DCMAKE_BUILD_TYPE=Release -DPEDAL_LEGENDS_BUILD_PLUGIN=OFF
 cmake --build build-dsp --parallel 4
 ctest --test-dir build-dsp --output-on-failure
 ```
-
-GitHub Actions workflow builds AU/VST3 macOS, VST3 Windows, and runs DSP plus localization/layout regression tests on Linux after commits.
-
-## Honest validation status
-
-**Passed locally:** C++ portable DSP compilation, all models produce audible mathematical output, correct eight-slot serial ordering and independent bypass, mono/stereo test, 200 factory preset rendering and numerical stability regression.
-
-**Not yet confirmed until the new v0.3.0 workflow and DAW tests:** native JUCE build on macOS/Windows, plugin loading in DAWs, state recall and A/B behavior in DAWs, audible comparisons against hardware, CPU benchmarks, texture fidelity against reference renders, anti-aliased nonlinear oversampling, production-grade polyphonic pitch shifting. Monophonic octave effects are explicitly described as monophonic. No circuit-level hardware-accuracy claims.
-
-The 120-model library is a future expansion target, not a claim of 120 completed algorithms. A/B state comparison and user preset save/load are now implemented in the editor. Per-pedal photorealistic texture artwork and further DSP validation remain ongoing.
-
-## No third-party plugin hosting
-
-Effects are implemented in-process, not VST/AU hosted in pedal slots. No third-party runtime audio engine.

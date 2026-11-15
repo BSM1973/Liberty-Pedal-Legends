@@ -58,6 +58,8 @@ juce::Colour pedalPaint(pedal::Model m) {
     return juce::Colour(shades[(index*17+index/5)%8]);
 }
 juce::String soundDescription(pedal::Model m) {
+    const auto& record=pedal::info(m);
+    if(!record.character.empty())return juce::String(std::string(record.character));
     const auto f=juce::String(std::string(pedal::info(m).family));
     if(f=="Overdrive")return juce::String::fromUTF8("Saturation progressive, harmonies chaleureuses et attaque de guitare préservée.");
     if(f=="Distortion")return juce::String::fromUTF8("Distorsion articulée, grain dense et réponse précise aux variations de jeu.");
@@ -74,6 +76,8 @@ juce::String soundDescription(pedal::Model m) {
     return juce::String::fromUTF8("Préamplification dynamique et couleur musicale pour votre guitare.");
 }
 juce::String historicalInfluence(pedal::Model m) {
+    const auto& record=pedal::info(m);
+    if(!record.inspiration.empty())return juce::String(std::string(record.inspiration));
     using M=pedal::Model;
     switch(m) {
         case M::VerdantDrive:return juce::String::fromUTF8("Ibanez Tube Screamer — inspiration de médiums et d'overdrive classique");
@@ -408,7 +412,7 @@ void PedalLegendsAudioProcessorEditor::drawPedal(juce::Graphics& g,R r,pedal::Mo
 void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     surface(g,R{28,139,1544,641},navySoft,midnight,18.f,goldDark);
     drawLabel(g,juce::String::fromUTF8("• THE LIBERTY COLLECTION"),R{68,149,330,27},15,goldLight,false,juce::Justification::centredLeft,true);
-    drawLabel(g,"40 ORIGINAL PEDALS",R{322,151,185,22},12,gold,false,juce::Justification::centredLeft,true);
+    drawLabel(g,"80 ORIGINAL PEDALS",R{322,151,185,22},12,gold,false,juce::Justification::centredLeft,true);
     // The board is the current view. Avoid a redundant button with no effect.
     // The routing action stays in the same header strip, centered in its free area.
     button(g,R{609,146,140,27},"ROUTING",[this]{setScreen(Screen::Routing);},true,false,11.f);
@@ -637,7 +641,7 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     surface(g,R{108,180,393,649},navySoft,midnight,4.f,goldDark);
     const auto model=pedal::Model(std::clamp(historyModel,1,pedal::kModelCount-1));
     const auto& md=pedal::info(model);
-    drawLabel(g,localized("entry_label")+juce::String(historyModel).paddedLeft('0',2)+"   /   40",
+    drawLabel(g,localized("entry_label")+juce::String(historyModel).paddedLeft('0',2)+"   /   "+juce::String(pedal::kModelCount-1),
               R{136,195,290,20},12,goldLight,false,juce::Justification::centredLeft,true);
     drawLabel(g,juce::String(std::string(md.name)),R{136,225,335,48},32,cream,true);
     drawLabel(g,familyText(md.family),R{137,275,329,22},13,goldLight,false,juce::Justification::centredLeft,true);
@@ -647,12 +651,12 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     drawLabel(g,juce::String::fromUTF8("Illustration Liberty · lecture seule"),R{141,608,327,17},11,cream,true,
               juce::Justification::centred);
     line(g,138,639,472,639,goldDark.withAlpha(.65f));
-    drawLabel(g,"EXPLORER LES 40 FICHES",R{138,652,290,22},12,goldLight,false,
+    drawLabel(g,"EXPLORER LES 80 FICHES",R{138,652,290,22},12,goldLight,false,
               juce::Justification::centredLeft,true);
-    button(g,R{137,683,39,40},"<",[this]{historyModel=historyModel<=1?40:historyModel-1;},false,false,21.f);
+    button(g,R{137,683,39,40},"<",[this]{historyModel=historyModel<=1?pedal::kModelCount-1:historyModel-1;},false,false,21.f);
     button(g,R{182,683,235,40},juce::String(std::string(md.name)),
-           [this]{historyModel=historyModel==40?1:historyModel+1;},true,false,14.f);
-    button(g,R{423,683,40,40},">",[this]{historyModel=historyModel>=40?1:historyModel+1;},false,false,21.f);
+           [this]{historyModel=historyModel>=pedal::kModelCount-1?1:historyModel+1;},true,false,14.f);
+    button(g,R{423,683,40,40},">",[this]{historyModel=historyModel>=pedal::kModelCount-1?1:historyModel+1;},false,false,21.f);
     drawLabel(g,juce::String::fromUTF8("La consultation ne charge aucune pédale."),R{137,726,328,17},11,cream,true);
     line(g,138,754,472,754,goldDark.withAlpha(.65f));
     drawLabel(g,juce::String::fromUTF8("DANS VOTRE PÉDALIER"),R{137,765,305,21},11,goldLight,false,
@@ -702,13 +706,18 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
         surface(g,R{535,483,925,82},paper,goldLight,7.f,goldDark);
         drawLabel(g,historicalInfluence(model),R{556,495,880,29},17,ink,true,
                   juce::Justification::centredLeft,true);
-        drawLabel(g,localized("history_disclaimer"),
-                  R{558,530,871,25},13,ink,true);
+        const auto influence=md.artist.empty()||md.artist=="General"?
+            localized("history_disclaimer"):
+            juce::String::fromUTF8("Influence sonore libre : ")+
+            juce::String(std::string(md.artist))+
+            juce::String::fromUTF8(" - ni affiliation ni copie officielle.");
+        drawLabel(g,influence,R{558,530,871,25},13,ink,true);
         labelSection('C',juce::String::fromUTF8("CARACTÈRE SONORE"),589.f);
         drawLabel(g,localized(soundDescription(model))+localized("tone_suffix"),R{535,631,920,72},17,ink,true,
                   juce::Justification::topLeft);
         labelSection('D',"CONSEILS DE SOUND DESIGN",719.f);
-        drawLabel(g,localized("tip_sound"),
+        drawLabel(g,md.advice.empty()?localized("tip_sound"):
+                  juce::String(std::string(md.advice)),
                   R{535,755,921,51},15,ink,true,juce::Justification::topLeft);
     } else if(historyTab==1) {
         labelSection('A',"LA SIGNATURE SONORE",266.f);
@@ -733,10 +742,11 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
         drawLabel(g,localized("tip_chain"),
                   R{535,496,916,89},19,ink,true,juce::Justification::topLeft);
         labelSection('C',juce::String::fromUTF8("EXPÉRIENCES MUSICALES"),621.f);
-        drawLabel(g,localized("tip_exp"),
+        drawLabel(g,md.advice.empty()?localized("tip_exp"):
+                  juce::String(std::string(md.advice)),
                   R{535,666,918,93},19,ink,true,juce::Justification::topLeft);
     }
-    drawLabel(g,juce::String::fromUTF8("40 fiches françaises  ·  références pédagogiques  ·  illustrations originales Liberty"),
+    drawLabel(g,juce::String::fromUTF8("80 fiches françaises  ·  références pédagogiques  ·  illustrations originales Liberty"),
               R{126,840,880,22},11,goldDark,true);
     drawLabel(g,"VINTAGE SOUL. MODERN POWER.",R{1140,840,321,22},12,goldDark,false,
               juce::Justification::centredRight,true);
@@ -900,7 +910,7 @@ void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
 }
 void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
     const R panel{251,117,1098,709};
-    drawOverlay(g,panel,juce::String::fromUTF8("LA COLLECTION LIBERTY  ·  40 MODÈLES DSP"));
+    drawOverlay(g,panel,juce::String::fromUTF8("LA COLLECTION LIBERTY  ·  80 MODÈLES DSP"));
     drawLabel(g,localized("choose_slot")+juce::String(selectedSlot+1),
               R{383,139,885,44},27,ink,true);
     drawLabel(g,juce::String::fromUTF8("Rechercher un modèle, une famille ou une époque"),R{385,230,700,24},14,goldDark,true);
@@ -920,7 +930,10 @@ void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
     for(int i=1;i<pedal::kModelCount;++i) {
         const auto& item=pedal::info(pedal::Model(i));
         if(libraryCategory>=0&&item.family!=std::string_view(families[libraryCategory]))continue;
-        const auto combined=juce::String(std::string(item.name))+" "+juce::String(std::string(item.family))+" "+juce::String(std::string(item.era));
+        // Search covers name, family, historical era, and educational artist references.
+        const auto combined=juce::String(std::string(item.name))+" "+
+           juce::String(std::string(item.family))+" "+juce::String(std::string(item.era))+" "+
+           juce::String(std::string(item.artist))+" "+juce::String(std::string(item.inspiration));
         if(!term.isEmpty()&&!combined.containsIgnoreCase(term))continue;
         matches.push_back(i);
     }

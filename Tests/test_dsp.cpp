@@ -101,7 +101,14 @@ int main() {
     bypass.slots[0]={Model::SteelFang,true,{1.f,1.f,1.f,1.f}};
     auto bypassed=render(bypass);
     for(int i=0;i<size;++i) assert(std::abs(bypassed[size_t(i)]-original[size_t(i)])<.00001f);
-    assert(kModelCount==41);
+    assert(kModelCount==81);
+    assert(int(Model::InfiniteDrift)==40);
+    std::set<std::string> catalogueNames;
+    for(int i=1;i<kModelCount;++i){
+        const auto& metadata=info(Model(i));
+        assert(catalogueNames.insert(std::string(metadata.name)).second);
+        if(i>40){assert(!metadata.artist.empty());assert(!metadata.inspiration.empty());}
+    }
     const auto& presets=factoryPresets();
     assert(presets.size()==kFactoryPresetCount);
     assert(kFactoryPresetCount==200);
@@ -188,5 +195,5 @@ int main() {
             for(float x:input)assert(std::isfinite(x));
         }
     }
-    std::cout << "PASS: 40 effect models, 8 audio slots, stereo, order, bypass, independent instances, finite outputs, 100 series + 100 parallel factory presets\n";
+    std::cout << "PASS: 80 effect models, 8 audio slots, stereo, order, bypass, independent instances, finite outputs, 100 series + 100 parallel factory presets\n";
 }

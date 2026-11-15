@@ -21,7 +21,47 @@ enum class Model : int {
     GermaniumSun, WoollyThunder, GoldlinePreamp, OpticalSilk,
     ResonantSweep, FunkEnvelope, AnalogMirage, HarmonicPulse,
     MemoryTrail, CathedralAir, SpringGarden, OctaveCrown,
-    SubmarineVoice, TimeGarden, InfiniteDrift, Count
+    SubmarineVoice, TimeGarden, InfiniteDrift,
+    NeoClassic250,
+    SapphireValve,
+    MercuryNine,
+    FingerstyleGlow,
+    CopperContours,
+    LegacyOrange,
+    CosmicSatch,
+    RisingForce,
+    RoyalHarmony,
+    TitaniumRiff,
+    OctaviaHalo,
+    WoollyMuff,
+    GermaniumMist,
+    SiliconRazor,
+    NebulaSquare,
+    RegalTreble,
+    ClassicalPush,
+    CrystalFingers,
+    LegacyPresence,
+    VelvetPreamp,
+    FingerPulse,
+    GlassLimiter,
+    LeadSustain,
+    NeoAttack,
+    RoyalComp,
+    HorsieSweep,
+    CosmicWah,
+    VintageCrying,
+    FunkPrism,
+    TalkBoxish,
+    StereoDimension,
+    PhaseGarden,
+    LiquidRotary,
+    AquaVibrato,
+    GoldenFlange2,
+    TimeMachine,
+    DualOrbit,
+    CounterpointEight,
+    VelvetSlap,
+    ReverseBloom, Count
 };
 constexpr int kModelCount = static_cast<int>(Model::Count);
 
@@ -31,6 +71,8 @@ struct ModelInfo {
     uint32_t colour;
     std::array<std::string_view, kControls> controls;
     std::array<float, kControls> defaults;
+    // Optional encyclopedia information for the 40 new models.
+    std::string_view artist = {}, inspiration = {}, character = {}, advice = {};
 };
 const std::array<ModelInfo, kModelCount>& catalog() noexcept;
 const ModelInfo& info(Model model) noexcept;
