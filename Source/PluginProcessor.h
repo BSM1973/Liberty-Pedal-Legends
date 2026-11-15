@@ -1,0 +1,65 @@
+#pragma once
+#include <JuceHeader.h>
+#include "PedalDSP.h"
+#include "FactoryPresets.h"
+#include <array>
+#include <atomic>
+#include <algorithm>
+
+class PedalLegendsAudioProcessor final : public juce::AudioProcessor {
+public:
+    PedalLegendsAudioProcessor();
+    ~PedalLegendsAudioProcessor() override = default;
+    void prepareToPlay(double sampleRate,int samplesPerBlock) override;
+    void releaseResources() override;
+    void processBlock(juce::AudioBuffer<float>&,juce::MidiBuffer&) override;
+    juce::AudioProcessorEditor* createEditor() override;
+    bool hasEditor() const override { return true; }
+    const juce::String getName() const override { return "PEDAL LEGENDS"; }
+    bool acceptsMidi() const override { return false; }
+    bool producesMidi() const override { return false; }
+    bool isMidiEffect() const override { return false; }
+    double getTailLengthSeconds() const override { return 2.1; }
+    int getNumPrograms() override { return pedal::kFactoryPresetCount; }
+    int getCurrentProgram() override { return std::clamp(factoryPresetIndex.load(),0,pedal::kFactoryPresetCount-1); }
+    void setCurrentProgram(int index) override { loadFactoryPreset(index); }
+    const juce::String getProgramName(int index) override;
+    void changeProgramName(int,const juce::String&) override {}
+    void getStateInformation(juce::MemoryBlock&) override;
+    void setStateInformation(const void*,int) override;
+    bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
+
+    juce::AudioProcessorValueTreeState parameters;
+    static juce::AudioProcessorValueTreeState::ParameterLayout makeLayout();
+    static juce::String parameterID(int slot,int component);
+    pedal::Settings snapshot() const noexcept;
+    void loadFactoryPreset(int index);
+    void setModel(int slot,pedal::Model model);
+    void resetSlot(int slot);
+    void moveSlot(int from,int to);
+    void changeSlotEnabled(int slot,bool value);
+    void setControl(int slot,int control,float value);
+    void setGlobal(int which,float value);
+    void setParameterValue(const juce::String& id,float realValue);
+    bool isPresetModified() const noexcept { return presetModified.load(); }
+    int selectedFactoryPreset() const noexcept { return factoryPresetIndex.load(); }
+    float inputPeak() const noexcept { return inPeak.load(); }
+    float outputPeak() const noexcept { return outPeak.load(); }
+private:
+    pedal::Engine engine;
+    struct SlotRefs {
+        std::atomic<float>* model=nullptr;
+        std::atomic<float>* enabled=nullptr;
+        std::array<std::atomic<float>*,pedal::kControls> controls{};
+    };
+    std::array<SlotRefs,pedal::kSlots> refs{};
+    std::atomic<float>* inputGain=nullptr;
+    std::atomic<float>* outputGain=nullptr;
+    std::atomic<float>* mix=nullptr;
+    std::atomic<float>* bypass=nullptr;
+    std::atomic<int> factoryPresetIndex{0};
+    std::atomic<bool> presetModified{false};
+    std::atomic<float> inPeak{0.f},outPeak{0.f};
+    void applySettings(const pedal::Settings& s);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PedalLegendsAudioProcessor)
+};

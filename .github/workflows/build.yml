@@ -1,0 +1,38 @@
+name: PEDAL LEGENDS - Fresh JUCE AU VST3
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  native:
+    name: ${{ matrix.os }} - native plugin
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, windows-2022]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure JUCE 8.0.10
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPEDAL_LEGENDS_BUILD_PLUGIN=ON -DPEDAL_LEGENDS_BUILD_TESTS=ON
+      - name: Build DSP tests and native formats
+        run: cmake --build build --config Release --parallel 3
+      - name: Run portable DSP regression tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Upload native plugin artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pedal-legends-${{ matrix.os }}-native
+          path: build/PedalLegends_artefacts/Release/
+          if-no-files-found: warn
+  dsp-linux:
+    name: Ubuntu - portable DSP checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure without JUCE
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPEDAL_LEGENDS_BUILD_PLUGIN=OFF -DPEDAL_LEGENDS_BUILD_TESTS=ON
+      - name: Build
+        run: cmake --build build --parallel 4
+      - name: Run DSP tests
+        run: ctest --test-dir build --output-on-failure
