@@ -232,7 +232,6 @@ void PedalLegendsAudioProcessorEditor::timerCallback() {
         languageSelector.setSelectedId(stored+1,juce::dontSendNotification);
         search.setTextToShowWhenEmpty(localized("Rechercher..."),muted);
     }
-    if (boardTabFeedbackTicks>0) --boardTabFeedbackTicks;
     repaint();
 }
 juce::Point<float> PedalLegendsAudioProcessorEditor::logicalPoint(juce::Point<int> p) const {
@@ -332,8 +331,8 @@ void PedalLegendsAudioProcessorEditor::drawBackplate(juce::Graphics& g) {
         juce::String(pedal::factoryPresets()[size_t(index)].name);
     drawLabel(g,display,R{514,46,360,42},23,cream,true);
     drawLabel(g,"FACTORY / USER",R{838,27,140,18},11,muted,false,juce::Justification::centred,true);
-    button(g,R{911,61,30,30},"<",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+pedal::kFactoryPresetCount-1)%pedal::kFactoryPresetCount);},false,false,18.f);
-    button(g,R{944,61,30,30},">",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+1)%pedal::kFactoryPresetCount);},false,false,18.f);
+    button(g,R{911,53,30,30},"<",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+pedal::kFactoryPresetCount-1)%pedal::kFactoryPresetCount);},false,false,18.f);
+    button(g,R{944,53,30,30},">",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+1)%pedal::kFactoryPresetCount);},false,false,18.f);
     button(g,R{983,47,120,41},"BROWSE  200",[this]{setScreen(Screen::Presets);},true,false,13.f);
     button(g,R{1306,18,67,37},"SAVE",[this]{savePreset();},true,false,12.f);
     button(g,R{1382,18,75,37},viewingB?"A / [B]":"[A] / B",[this]{toggleAB();},true,false,12.f);
@@ -410,12 +409,9 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     surface(g,R{28,139,1544,641},navySoft,midnight,18.f,goldDark);
     drawLabel(g,juce::String::fromUTF8("• THE LIBERTY COLLECTION"),R{68,149,330,27},15,goldLight,false,juce::Justification::centredLeft,true);
     drawLabel(g,"40 ORIGINAL PEDALS",R{322,151,185,22},12,gold,false,juce::Justification::centredLeft,true);
-    // The Pedalboard tab is already selected on this screen. A short gold
-    // highlight on click confirms that the tab is live without changing layout.
-    button(g,R{536,146,132,27},"PEDALBOARD",
-           [this]{boardTabFeedbackTicks=24;setScreen(Screen::Board);},
-           boardTabFeedbackTicks>0,true,11.f);
-    button(g,R{681,146,140,27},"ROUTING",[this]{setScreen(Screen::Routing);},true,false,11.f);
+    // The board is the current view. Avoid a redundant button with no effect.
+    // The routing action stays in the same header strip, centered in its free area.
+    button(g,R{609,146,140,27},"ROUTING",[this]{setScreen(Screen::Routing);},true,false,11.f);
     const auto settings=processor.snapshot();
     drawLabel(g,settings.routing==pedal::RoutingMode::Series?
               "IN  >  1  >  2  >  3  >  4  >  5  >  6  >  7  >  8  >  OUT":
@@ -474,8 +470,8 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
             hit(R{enclosure.getCentreX()-26,enclosure.getBottom()-63,52,52},
                 [this,i,on=stage.enabled]{processor.changeSlotEnabled(i,!on);});
             button(g,R{box.getX()+38,box.getBottom()-34,96,26},"EDIT PEDAL",[this,i]{selectSlot(i);},false,false,11.f);
-            button(g,R{box.getX()+140,box.getBottom()-34,91,26},"LIBRARY  v",
-                   [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,11.f);
+            button(g,R{box.getX()+140,box.getBottom()-34,91,26},"LIBRARY",
+                   [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,10.f);
             button(g,R{box.getX()+239,box.getBottom()-34,31,26},"<",
                    [this,i]{if(i>0)processor.moveSlot(i,i-1);},false,false,19.f);
             button(g,R{box.getX()+275,box.getBottom()-34,31,26},">",
@@ -494,8 +490,8 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
             hit(empty,[this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);});
             button(g,R{box.getX()+50,box.getBottom()-34,112,26},"ADD PEDAL",
                    [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,11.f);
-            button(g,R{box.getX()+171,box.getBottom()-34,99,26},"LIBRARY  v",
-                   [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,11.f);
+            button(g,R{box.getX()+171,box.getBottom()-34,99,26},"LIBRARY",
+                   [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,10.f);
         }
     }
     // The bottom bar uses the same visual language as the reference image.

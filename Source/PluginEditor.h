@@ -33,7 +33,6 @@ private:
     Screen screen=Screen::Board, returnScreen=Screen::Board;
     int selectedSlot=0, historyModel=1, historyTab=0, browserCategory=-1, libraryCategory=-1;
     int browserOffset=0, libraryOffset=0, browserMode=-1; // -1 all, 0 serial, 1 parallel
-    int boardTabFeedbackTicks=0; // Short confirmation when selecting the already active Pedalboard tab
     float scale=1.f, xOffset=0.f, yOffset=0.f;
     std::vector<HotSpot> hotspots;
     std::function<void(float)> dragCallback;
