@@ -232,6 +232,7 @@ void PedalLegendsAudioProcessorEditor::timerCallback() {
         languageSelector.setSelectedId(stored+1,juce::dontSendNotification);
         search.setTextToShowWhenEmpty(localized("Rechercher..."),muted);
     }
+    if (boardTabFeedbackTicks>0) --boardTabFeedbackTicks;
     repaint();
 }
 juce::Point<float> PedalLegendsAudioProcessorEditor::logicalPoint(juce::Point<int> p) const {
@@ -409,7 +410,11 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     surface(g,R{28,139,1544,641},navySoft,midnight,18.f,goldDark);
     drawLabel(g,juce::String::fromUTF8("• THE LIBERTY COLLECTION"),R{68,149,330,27},15,goldLight,false,juce::Justification::centredLeft,true);
     drawLabel(g,"40 ORIGINAL PEDALS",R{322,151,185,22},12,gold,false,juce::Justification::centredLeft,true);
-    button(g,R{536,146,132,27},"PEDALBOARD",[this]{setScreen(Screen::Board);},false,true,11.f);
+    // The Pedalboard tab is already selected on this screen. A short gold
+    // highlight on click confirms that the tab is live without changing layout.
+    button(g,R{536,146,132,27},"PEDALBOARD",
+           [this]{boardTabFeedbackTicks=24;setScreen(Screen::Board);},
+           boardTabFeedbackTicks>0,true,11.f);
     button(g,R{681,146,140,27},"ROUTING",[this]{setScreen(Screen::Routing);},true,false,11.f);
     const auto settings=processor.snapshot();
     drawLabel(g,settings.routing==pedal::RoutingMode::Series?
@@ -782,8 +787,10 @@ void PedalLegendsAudioProcessorEditor::drawRouting(juce::Graphics& g) {
         const float y=414.f, start=224.f, step=141.5f;
         line(g,196,y+42,1385,y+42,gold,4.f);
         for(int i=0;i<pedal::kSlots;++i)node(i,R{start+i*step,y,130,92},false,0);
-        drawLabel(g,"IN",R{185,458,42,20},12,goldLight,false,juce::Justification::centred,true);
-        drawLabel(g,"OUT",R{1364,458,56,20},12,goldLight,false,juce::Justification::centred,true);
+        // Move captions into the bottom padding of the series diagram.
+        // No label covers a card or extends beyond the panel boundary.
+        drawLabel(g,"IN",R{193,519,55,22},12,goldLight,false,juce::Justification::centred,true);
+        drawLabel(g,"OUT",R{1324,519,62,22},12,goldLight,false,juce::Justification::centred,true);
         drawLabel(g,localized("SERIES NOTE"),R{218,566,1139,46},15,cream,true,
                   juce::Justification::centred);
     } else {
@@ -809,8 +816,11 @@ void PedalLegendsAudioProcessorEditor::drawRouting(juce::Graphics& g) {
                 }
             }
         }
-        drawLabel(g,localized("SPLIT"),R{168,461,95,33},16,goldDark,true);
-        drawLabel(g,localized("MERGE"),R{1350,461,92,33},16,goldDark,true);
+        // Put both captions in the cream gutter above the parallel lanes.
+        // On the previous row they straddled the lane border and were clipped.
+        drawLabel(g,localized("SPLIT"),R{192,288,126,24},14,goldDark,true);
+        drawLabel(g,localized("MERGE"),R{1230,288,147,24},14,goldDark,true,
+                  juce::Justification::centredRight);
     }
     surface(g,R{174,724,1222,86},navySoft,midnight,9.f,goldDark);
     drawLabel(g,localized("BLEND A/B"),R{206,735,238,30},18,goldLight,true);
@@ -824,7 +834,7 @@ void PedalLegendsAudioProcessorEditor::drawRouting(juce::Graphics& g) {
     drawLabel(g,"B",R{1112,766,27,27},16,goldLight,false,juce::Justification::centred);
     drawLabel(g,juce::String(int(cfg.parallelBlend*100.f))+" % B",R{1194,748,145,38},20,cream,true,
               juce::Justification::centred);
-    drawLabel(g,localized("ROUTING MODE SAVED"),R{734,286,625,24},12,goldDark,false,
+    drawLabel(g,localized("ROUTING MODE SAVED"),R{657,288,520,23},12,goldDark,false,
               juce::Justification::centredRight);
 }
 void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
