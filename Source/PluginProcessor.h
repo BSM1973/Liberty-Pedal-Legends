@@ -39,7 +39,14 @@ public:
     void moveSlot(int from,int to);
     void changeSlotEnabled(int slot,bool value);
     void setControl(int slot,int control,float value);
+    void setSlotMix(int slot,float value);
+    void setSlotLevel(int slot,float db);
     void setGlobal(int which,float value);
+    void restoreSettings(const pedal::Settings& settings);
+    void setGateEnabled(bool enabled);
+    void setGateThreshold(float db);
+    bool gateEnabled() const noexcept;
+    float gateThreshold() const noexcept;
     void setParameterValue(const juce::String& id,float realValue);
     bool isPresetModified() const noexcept { return presetModified.load(); }
     int selectedFactoryPreset() const noexcept { return factoryPresetIndex.load(); }
@@ -50,6 +57,8 @@ private:
     struct SlotRefs {
         std::atomic<float>* model=nullptr;
         std::atomic<float>* enabled=nullptr;
+        std::atomic<float>* mix=nullptr;
+        std::atomic<float>* level=nullptr;
         std::array<std::atomic<float>*,pedal::kControls> controls{};
     };
     std::array<SlotRefs,pedal::kSlots> refs{};
@@ -57,6 +66,10 @@ private:
     std::atomic<float>* outputGain=nullptr;
     std::atomic<float>* mix=nullptr;
     std::atomic<float>* bypass=nullptr;
+    std::atomic<float>* noiseGate=nullptr;
+    std::atomic<float>* noiseGateThreshold=nullptr;
+    std::array<float,2> gateEnvelope{{0.f,0.f}};
+    float gateGain=1.f;
     std::atomic<int> factoryPresetIndex{0};
     std::atomic<bool> presetModified{false};
     std::atomic<float> inPeak{0.f},outPeak{0.f};

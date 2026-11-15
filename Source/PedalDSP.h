@@ -39,6 +39,8 @@ struct SlotSettings {
     Model model = Model::Empty;
     bool enabled = false;
     std::array<float, kControls> controls { .5f, .5f, .5f, .5f };
+    float mix = 1.f;
+    float levelDb = 0.f;
 };
 struct Settings {
     std::array<SlotSettings, kSlots> slots {};
@@ -87,6 +89,8 @@ private:
         std::array<ChannelState, kMaxChannels> channel;
         Model lastModel = Model::Empty;
         float wet = 0.f;
+        float smoothedMix = 1.f;
+        float smoothedLevel = 1.f;
         std::array<float, kControls> smoothed { .5f, .5f, .5f, .5f };
     };
     std::array<SlotState, kSlots> states_;

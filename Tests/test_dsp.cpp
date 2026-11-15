@@ -60,6 +60,24 @@ int main() {
     double separate=0.;
     for(int i=0;i<size;++i) separate+=std::abs(two[size_t(i)]-one[size_t(i)]);
     assert(separate>0.1);
+    // The approved editor's additional per-slot MIX and LEVEL knobs must
+    // change audio and must remain independent from the four model controls.
+    Settings stageMix;
+    stageMix.slots[0]={Model::VerdantDrive,true,info(Model::VerdantDrive).defaults};
+    auto wetTone=render(stageMix);
+    stageMix.slots[0].mix=0.f;
+    auto dryTone=render(stageMix);
+    double mixDifference=0.;
+    for(int i=0;i<size;++i)mixDifference+=std::abs(wetTone[size_t(i)]-dryTone[size_t(i)]);
+    assert(mixDifference>0.1);
+    stageMix.slots[0].mix=1.f;
+    stageMix.slots[0].levelDb=-12.f;
+    auto quietTone=render(stageMix);
+    stageMix.slots[0].levelDb=6.f;
+    auto loudTone=render(stageMix);
+    double quietEnergy=0.,loudEnergy=0.;
+    for(int i=0;i<size;++i){quietEnergy+=quietTone[size_t(i)]*quietTone[size_t(i)];loudEnergy+=loudTone[size_t(i)]*loudTone[size_t(i)];}
+    assert(loudEnergy>quietEnergy);
     // All eight slots are in the actual signal chain.
     for(int count=1;count<=8;++count) {
         Settings chain;

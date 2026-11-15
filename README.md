@@ -10,7 +10,10 @@ Clean-room, original project created from the supplied PEDAL LEGENDS specificati
 - **40 original effect models** with independently coded signal processing, across drive, distortion, fuzz, boost, compression, EQ, wah, modulation, tremolo, delay, reverb, monophonic octave synthesis and experimental.
 - **100 factory presets**, 10 categories of 10 each; actual saved 8-slot settings with differing chains, levels and controls.
 - JUCE 8 AU/VST3 plugin source with host automation, project state recall, navigable browser, live search/category filters, peak meters, controls and editable graphical pedalboard.
-- Responsive champagne/olive/copper **vector UI foundation**. Photorealistic per-pedal artwork is a remaining milestone; the current vector artwork must not be described as photorealistic.
+- New responsive **midnight-blue and gold editor** built around the approved three-screen design: 2×4 premium pedalboard, large focused editor, and read-only French pedal encyclopedia covering all 40 models. Layered gradients, brushed-metal pedal enclosures, gold rotary controls, and clear typography are drawn natively in JUCE. The generated design references are visual targets, not interactive images pasted over controls.
+- Historical notes with era, sonic family, general physical-instrument inspirations and sound-design advice. These are explicitly educational references, not circuit-accurate clones.
+- Searchable **40-model library** and **100-preset browser**, direct preset loading, saved user files (`.plegends`) and A/B editor comparisons.
+- Per-slot MIX and LEVEL automation now changes real DSP output. New global stereo-linked noise gate with user threshold is optional and off by default.
 - Mono and stereo processing paths. Per-parameter smoothing and soft transitions on bypass/model selection. No allocation in the DSP process callback after `prepare()`.
 
 ## Build
@@ -37,9 +40,9 @@ GitHub Actions workflow builds AU/VST3 macOS, VST3 Windows and portable DSP on L
 
 **Passed locally:** C++ portable DSP compilation, all models produce audible mathematical output, correct eight-slot serial ordering and independent bypass, mono/stereo test, 100 factory preset rendering and numerical stability regression.
 
-**Not yet confirmed:** actual native JUCE build on macOS/Windows, plugin loading in DAWs, APVTS state round-trip in a DAW, audible A/B tests against hardware, CPU benchmarks on host machines, true photoreal textures, anti-aliased nonlinear oversampling, production-grade polyphonic pitch shifting. Monophonic octave effects are explicitly described as monophonic. No circuit-level hardware-accuracy claims.
+**Not yet confirmed for this new UI version:** native JUCE build on macOS/Windows, plugin loading in DAWs, state recall and A/B behavior in DAWs, audible comparisons against hardware, CPU benchmarks, texture fidelity against reference renders, anti-aliased nonlinear oversampling, production-grade polyphonic pitch shifting. Monophonic octave effects are explicitly described as monophonic. No circuit-level hardware-accuracy claims.
 
-The 120-model library is a future expansion target, not a claim of 120 completed algorithms. A/B comparison, custom user preset save/load and premium per-pedal artwork are future additions.
+The 120-model library is a future expansion target, not a claim of 120 completed algorithms. A/B state comparison and user preset save/load are now implemented in the editor. Per-pedal photorealistic texture artwork and further DSP validation remain ongoing.
 
 ## No third-party plugin hosting
 

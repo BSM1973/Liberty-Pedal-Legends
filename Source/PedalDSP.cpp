@@ -39,7 +39,7 @@ const std::array<ModelInfo, kModelCount>& catalog() noexcept {
         {Model::CrystalLift,"Crystal Lift","Boost / Preamp","2000s",0x9bada4,{"BOOST","BASS","TREBLE","LEVEL"},{.3f,.5f,.5f,.5f}},
         {Model::BritishSpark,"British Spark","Boost / Preamp","1970s",0xb79c5f,{"BOOST","SPARK","BODY","LEVEL"},{.4f,.68f,.43f,.5f}},
         {Model::VelvetSustain,"Velvet Sustain","Compressor","1980s",0x8d8878,{"SUSTAIN","ATTACK","BLEND","LEVEL"},{.55f,.3f,.75f,.5f}},
-        {Model::SculptEQ,"Sculpt EQ","EQ / Filter","2000s",0x719a8b,{"LOW","MID","HIGH","LEVEL"},{.5f,.5f,.5f,.5f}},
+        {Model::SculptEQ,"Olive Tone","EQ / Filter","2000s",0x719a8b,{"LOW","MID","HIGH","LEVEL"},{.5f,.5f,.5f,.5f}},
         {Model::VocalWah,"Vocal Wah","Wah / Envelope","1970s",0x948048,{"POSITION","Q","DRIVE","MIX"},{.5f,.52f,.35f,.85f}},
         {Model::AzureChorus,"Azure Chorus","Modulation","1980s",0x497caa,{"RATE","DEPTH","TONE","MIX"},{.3f,.55f,.65f,.5f}},
         {Model::OrbitPhase,"Orbit Phase","Modulation","1970s",0x937bba,{"RATE","DEPTH","REGEN","MIX"},{.4f,.7f,.3f,.72f}},
@@ -57,7 +57,7 @@ const std::array<ModelInfo, kModelCount>& catalog() noexcept {
         {Model::GermaniumSun,"Germanium Sun","Fuzz","1970s",0xc69c53,{"FUZZ","BIAS","TONE","LEVEL"},{.7f,.52f,.48f,.44f}},
         {Model::WoollyThunder,"Woolly Thunder","Fuzz","1990s",0x635f4c,{"FUZZ","GATE","LOW","LEVEL"},{.65f,.38f,.7f,.4f}},
         {Model::GoldlinePreamp,"Goldline Preamp","Boost / Preamp","2000s",0x9f937b,{"GAIN","BODY","SHEEN","LEVEL"},{.35f,.45f,.5f,.5f}},
-        {Model::OpticalSilk,"Optical Silk","Compressor","2000s",0xc1ad8a,{"THRESH","RELEASE","BLEND","LEVEL"},{.5f,.55f,.85f,.52f}},
+        {Model::OpticalSilk,"Copper Optic","Compressor","2000s",0xc1ad8a,{"THRESH","RELEASE","BLEND","LEVEL"},{.5f,.55f,.85f,.52f}},
         {Model::ResonantSweep,"Resonant Sweep","EQ / Filter","2010s",0x647e69,{"FREQ","Q","DRIVE","MIX"},{.5f,.55f,.28f,.9f}},
         {Model::FunkEnvelope,"Funk Envelope","Wah / Envelope","1970s",0x9c854e,{"SENSE","RESON","DECAY","MIX"},{.58f,.55f,.47f,.82f}},
         {Model::AnalogMirage,"Analog Mirage","Modulation","1980s",0x718c81,{"RATE","DEPTH","WARMTH","MIX"},{.27f,.5f,.65f,.55f}},
@@ -547,6 +547,8 @@ void Engine::process(float* const* audio, int channels, int numSamples,
             slot.lastModel=model;
             slot.wet=0.f; // fade from dry on model replacement
             slot.smoothed=settings.slots[size_t(i)].controls;
+            slot.smoothedMix=std::clamp(settings.slots[size_t(i)].mix,0.f,1.f);
+            slot.smoothedLevel=db(std::clamp(settings.slots[size_t(i)].levelDb,-18.f,18.f));
             for (auto& ch : slot.channel) ch.resetScalars(); // no vector clear/allocation in callback
         }
     }
@@ -580,10 +582,13 @@ void Engine::process(float* const* audio, int channels, int numSamples,
             slot.wet += smooth*(target-slot.wet);
             for (int k=0;k<kControls;++k)
                 slot.smoothed[size_t(k)] += smooth*(clamp(cfg.controls[size_t(k)],0.f,1.f)-slot.smoothed[size_t(k)]);
+            slot.smoothedMix+=smooth*(clamp(cfg.mix,0.f,1.f)-slot.smoothedMix);
+            slot.smoothedLevel+=smooth*(db(clamp(cfg.levelDb,-18.f,18.f))-slot.smoothedLevel);
             if (slot.wet<.00001f) continue;
             for (int ch=0;ch<channels;++ch) {
                 const float processed=processOne(cfg.model,slot.channel[size_t(ch)],ch,wet[ch],slot.smoothed);
-                wet[ch]=wet[ch]+slot.wet*(processed-wet[ch]);
+                const float mixed=wet[ch]*(1.f-slot.smoothedMix)+processed*slot.smoothedMix;
+                wet[ch]+=slot.wet*(mixed*slot.smoothedLevel-wet[ch]);
             }
         }
         for (int ch=0;ch<channels;++ch) {

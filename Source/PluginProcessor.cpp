@@ -21,12 +21,14 @@ juce::String PedalLegendsAudioProcessor::parameterID(int slot,int component) {
 juce::AudioProcessorValueTreeState::ParameterLayout PedalLegendsAudioProcessor::makeLayout() {
     using namespace juce;
     std::vector<std::unique_ptr<RangedAudioParameter>> items;
-    items.reserve(52);
+    items.reserve(74);
     const auto models=modelNames();
     for(int s=0;s<pedal::kSlots;++s) {
         const auto prefix="Slot "+String(s+1)+" ";
         items.push_back(std::make_unique<AudioParameterChoice>(ParameterID(parameterID(s,0),1),prefix+"Pedal",models,0));
         items.push_back(std::make_unique<AudioParameterBool>(ParameterID(parameterID(s,1),1),prefix+"Enabled",false));
+        items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("slot"+String(s+1)+"_mix",1),prefix+"Wet Dry",NormalisableRange<float>(0.f,1.f),1.f));
+        items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("slot"+String(s+1)+"_level",1),prefix+"Level dB",NormalisableRange<float>(-18.f,18.f,.1f),0.f));
         for(int c=0;c<pedal::kControls;++c)
             items.push_back(std::make_unique<AudioParameterFloat>(ParameterID(parameterID(s,c+2),1),prefix+"Control "+String(c+1),NormalisableRange<float>(0.f,1.f),.5f));
     }
@@ -34,6 +36,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout PedalLegendsAudioProcessor::
     items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("global_output",1),"Output dB",NormalisableRange<float>(-24.f,24.f,.1f),0.f));
     items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("global_mix",1),"Global Wet Dry",NormalisableRange<float>(0.f,1.f),1.f));
     items.push_back(std::make_unique<AudioParameterBool>(ParameterID("global_bypass",1),"Global Bypass",false));
+    items.push_back(std::make_unique<AudioParameterBool>(ParameterID("global_gate",1),"Global Noise Gate",false));
+    items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("global_gate_threshold",1),"Noise Gate Threshold dB",NormalisableRange<float>(-90.f,-15.f,.1f),-66.f));
     return {items.begin(),items.end()};
 }
 PedalLegendsAudioProcessor::PedalLegendsAudioProcessor()
@@ -44,6 +48,8 @@ PedalLegendsAudioProcessor::PedalLegendsAudioProcessor()
         auto& ref=refs[size_t(s)];
         ref.model=parameters.getRawParameterValue(parameterID(s,0));
         ref.enabled=parameters.getRawParameterValue(parameterID(s,1));
+        ref.mix=parameters.getRawParameterValue("slot"+juce::String(s+1)+"_mix");
+        ref.level=parameters.getRawParameterValue("slot"+juce::String(s+1)+"_level");
         for(int c=0;c<pedal::kControls;++c)
             ref.controls[size_t(c)]=parameters.getRawParameterValue(parameterID(s,c+2));
     }
@@ -51,6 +57,8 @@ PedalLegendsAudioProcessor::PedalLegendsAudioProcessor()
     outputGain=parameters.getRawParameterValue("global_output");
     mix=parameters.getRawParameterValue("global_mix");
     bypass=parameters.getRawParameterValue("global_bypass");
+    noiseGate=parameters.getRawParameterValue("global_gate");
+    noiseGateThreshold=parameters.getRawParameterValue("global_gate_threshold");
     loadFactoryPreset(0);
 }
 bool PedalLegendsAudioProcessor::isBusesLayoutSupported(const BusesLayout& b) const {
@@ -60,6 +68,7 @@ bool PedalLegendsAudioProcessor::isBusesLayoutSupported(const BusesLayout& b) co
 void PedalLegendsAudioProcessor::prepareToPlay(double rate,int) {
     engine.prepare(rate,getTotalNumInputChannels());
     inPeak.store(0); outPeak.store(0);
+    gateEnvelope={{0.f,0.f}}; gateGain=1.f;
 }
 void PedalLegendsAudioProcessor::releaseResources() { engine.reset(); }
 pedal::Settings PedalLegendsAudioProcessor::snapshot() const noexcept {
@@ -70,6 +79,8 @@ pedal::Settings PedalLegendsAudioProcessor::snapshot() const noexcept {
         const int index=std::clamp(int(ref.model->load(std::memory_order_relaxed)),0,pedal::kModelCount-1);
         slot.model=pedal::Model(index);
         slot.enabled=ref.enabled->load(std::memory_order_relaxed)>.5f;
+        slot.mix=std::clamp(ref.mix->load(std::memory_order_relaxed),0.f,1.f);
+        slot.levelDb=std::clamp(ref.level->load(std::memory_order_relaxed),-18.f,18.f);
         for(int c=0;c<pedal::kControls;++c)
             slot.controls[size_t(c)]=std::clamp(ref.controls[size_t(c)]->load(std::memory_order_relaxed),0.f,1.f);
     }
@@ -87,6 +98,28 @@ void PedalLegendsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,j
     if(channels<1||buffer.getNumSamples()<1)return;
     float before=0.f;
     for(int c=0;c<channels;++c)before=std::max(before,buffer.getMagnitude(c,0,buffer.getNumSamples()));
+    // Simple stereo-linked noise gate, smoothed sample-by-sample with no allocations.
+    // All automation parameters are atomic and the envelope state lives in the processor.
+    if(noiseGate->load(std::memory_order_relaxed)>0.5f) {
+        const float sr=static_cast<float>(getSampleRate()>0?getSampleRate():48000.0);
+        const float threshold=std::pow(10.f,noiseGateThreshold->load(std::memory_order_relaxed)/20.f);
+        const float attack=1.f-std::exp(-1.f/(sr*.003f));
+        const float release=1.f-std::exp(-1.f/(sr*.14f));
+        for(int frame=0;frame<buffer.getNumSamples();++frame) {
+            float envelope=0.f;
+            for(int ch=0;ch<channels;++ch) {
+                const float level=std::abs(buffer.getSample(ch,frame));
+                auto& current=gateEnvelope[size_t(ch)];
+                const float coefficient=level>current?attack:release;
+                current+=(level-current)*coefficient;
+                envelope=std::max(envelope,current);
+            }
+            const float desired=envelope>threshold?1.f:0.f;
+            gateGain+=(desired-gateGain)*(desired>gateGain?attack:release);
+            for(int ch=0;ch<channels;++ch)
+                buffer.getWritePointer(ch)[frame]*=gateGain;
+        }
+    } else gateGain=1.f;
     float* pointers[2]={buffer.getWritePointer(0),channels>1?buffer.getWritePointer(1):nullptr};
     const auto setting=snapshot();
     engine.process(pointers,channels,buffer.getNumSamples(),setting);
@@ -112,12 +145,32 @@ void PedalLegendsAudioProcessor::applySettings(const pedal::Settings& cfg) {
         setParameterValue(parameterID(s,0),float(int(slot.model)));
         for(int c=0;c<pedal::kControls;++c)
             setParameterValue(parameterID(s,c+2),slot.controls[size_t(c)]);
+        setParameterValue("slot"+juce::String(s+1)+"_mix",slot.mix);
+        setParameterValue("slot"+juce::String(s+1)+"_level",slot.levelDb);
         setParameterValue(parameterID(s,1),slot.enabled?1.f:0.f);
     }
     setParameterValue("global_input",cfg.inputDb);
     setParameterValue("global_output",cfg.outputDb);
     setParameterValue("global_mix",cfg.globalMix);
     setParameterValue("global_bypass",cfg.globalBypass?1.f:0.f);
+}
+void PedalLegendsAudioProcessor::restoreSettings(const pedal::Settings& settings) {
+    applySettings(settings);
+    presetModified.store(true);
+}
+void PedalLegendsAudioProcessor::setGateEnabled(bool enabled) {
+    setParameterValue("global_gate",enabled?1.f:0.f);
+    presetModified.store(true);
+}
+void PedalLegendsAudioProcessor::setGateThreshold(float db) {
+    setParameterValue("global_gate_threshold",std::clamp(db,-90.f,-15.f));
+    presetModified.store(true);
+}
+bool PedalLegendsAudioProcessor::gateEnabled() const noexcept {
+    return noiseGate->load(std::memory_order_relaxed)>.5f;
+}
+float PedalLegendsAudioProcessor::gateThreshold() const noexcept {
+    return noiseGateThreshold->load(std::memory_order_relaxed);
 }
 void PedalLegendsAudioProcessor::loadFactoryPreset(int index) {
     if(index<0||index>=pedal::kFactoryPresetCount)return;
@@ -153,6 +206,8 @@ void PedalLegendsAudioProcessor::moveSlot(int from,int to) {
         setParameterValue(parameterID(s,0),float(int(stages[size_t(s)].model)));
         for(int c=0;c<pedal::kControls;++c)
             setParameterValue(parameterID(s,c+2),stages[size_t(s)].controls[size_t(c)]);
+        setParameterValue("slot"+juce::String(s+1)+"_mix",stages[size_t(s)].mix);
+        setParameterValue("slot"+juce::String(s+1)+"_level",stages[size_t(s)].levelDb);
         setParameterValue(parameterID(s,1),stages[size_t(s)].enabled?1.f:0.f);
     }
     presetModified.store(true);
@@ -165,6 +220,16 @@ void PedalLegendsAudioProcessor::changeSlotEnabled(int slot,bool value) {
 void PedalLegendsAudioProcessor::setControl(int slot,int control,float value) {
     if(slot<0||slot>=pedal::kSlots||control<0||control>=pedal::kControls)return;
     setParameterValue(parameterID(slot,control+2),std::clamp(value,0.f,1.f));
+    presetModified.store(true);
+}
+void PedalLegendsAudioProcessor::setSlotMix(int slot,float value) {
+    if(slot<0||slot>=pedal::kSlots)return;
+    setParameterValue("slot"+juce::String(slot+1)+"_mix",std::clamp(value,0.f,1.f));
+    presetModified.store(true);
+}
+void PedalLegendsAudioProcessor::setSlotLevel(int slot,float dbValue) {
+    if(slot<0||slot>=pedal::kSlots)return;
+    setParameterValue("slot"+juce::String(slot+1)+"_level",std::clamp(dbValue,-18.f,18.f));
     presetModified.store(true);
 }
 void PedalLegendsAudioProcessor::setGlobal(int which,float value) {

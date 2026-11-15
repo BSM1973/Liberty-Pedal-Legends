@@ -82,6 +82,20 @@ const std::array<FactoryPreset,kFactoryPresetCount>& factoryPresets() {
         for(int cat=0;cat<10;++cat)
             for(int variant=0;variant<10;++variant)
                 result[size_t(cat*10+variant)]=make(cat,variant);
+        // A real, playable welcome chain matching the six populated slots in
+        // the approved eight-slot pedalboard layout. The remaining 99 presets
+        // are generated as before; the library count remains exactly 100.
+        auto& welcome=result[0].settings;
+        constexpr Model welcomeModels[]={Model::OpticalSilk,Model::VerdantDrive,
+            Model::SculptEQ,Model::AzureChorus,Model::TapeVoyager,Model::GoldenPlate};
+        for(int slot=0;slot<kSlots;++slot) {
+            auto& stage=welcome.slots[size_t(slot)];
+            if(slot<6) {
+                stage.model=welcomeModels[slot];
+                stage.enabled=slot!=3; // chorus initially bypassed like the reference
+                stage.controls=info(stage.model).defaults;
+            } else stage=SlotSettings{};
+        }
         return result;
     }();
     return presets;
