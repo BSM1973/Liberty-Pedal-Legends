@@ -885,9 +885,9 @@ void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
               juce::String(std::min(int(matches.size()),browserOffset+pageSize))+" / "+juce::String(matches.size()),
               R{386,704,503,31},14,ink,true);
     button(g,R{945,703,107,35},localized("PREVIOUS"),
-           [this]{browserOffset=std::max(0,browserOffset-pageSize);},true,false,11.f);
+           [this,pageSize]{browserOffset=std::max(0,browserOffset-pageSize);},true,false,11.f);
     button(g,R{1058,703,108,35},localized("NEXT"),
-           [this,maxItems=int(matches.size())]{browserOffset=std::min(std::max(0,maxItems-pageSize),browserOffset+pageSize);},
+           [this,maxItems=int(matches.size()),pageSize]{browserOffset=std::min(std::max(0,maxItems-pageSize),browserOffset+pageSize);},
            true,false,11.f);
     button(g,R{760,755,433,35},localized("USER PRESET"),
            [this]{openUserPreset();},true,false,12.f);
