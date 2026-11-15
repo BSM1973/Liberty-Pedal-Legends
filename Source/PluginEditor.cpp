@@ -38,6 +38,18 @@ juce::String yearText(std::string_view era) {
     if(s.contains("2020"))return "2026";
     return "2026";
 }
+juce::String yearForModel(pedal::Model m) {
+    // Reference-screen era captions are storytelling labels, not hardware-clone claims.
+    switch (m) {
+        case pedal::Model::OpticalSilk: return "2004";
+        case pedal::Model::VerdantDrive: return "1979";
+        case pedal::Model::SculptEQ: return "1982";
+        case pedal::Model::AzureChorus: return "1984";
+        case pedal::Model::TapeVoyager: return "1973";
+        case pedal::Model::GoldenPlate: return "1985";
+        default: return yearText(pedal::info(m).era);
+    }
+}
 juce::Colour pedalPaint(pedal::Model m) {
     static constexpr unsigned shades[]={0xff1e4769,0xff145273,0xff254661,0xff32658c,
                                         0xff1a4162,0xff45728c,0xff233952,0xff164b67};
@@ -307,7 +319,7 @@ void PedalLegendsAudioProcessorEditor::drawPedal(juce::Graphics& g,R r,pedal::Mo
         g.setColour(goldLight);g.fillEllipse(x-3.f,y-3.f,6.f,6.f);
         line(g,x-2.f,y+1.f,x+2.f,y-1.f,ink,.7f);
     }
-    drawLabel(g,"L I B E R T Y   —   "+yearText(pedal::info(model).era),
+    drawLabel(g,"L I B E R T Y   —   "+yearForModel(model),
               R{r.getX()+15,r.getY()+7,r.getWidth()-30,17},large?12.f:9.f,goldLight,false,
               juce::Justification::centred,true);
     drawLabel(g,juce::String(std::string(pedal::info(model).name)),
@@ -427,11 +439,11 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     drawLabel(g,"MASTER",R{33,826,90,18},14,goldLight,false,juce::Justification::centredLeft,true);
     drawLabel(g,"SIGNAL",R{33,850,90,18},14,goldLight,false,juce::Justification::centredLeft,true);
     line(g,110,806,110,894,goldDark,1.5f);
-    drawKnob(g,174,833,23,(settings.inputDb+24.f)/48.f,"INPUT",juce::String(settings.inputDb,1)+" dB",
+    drawKnob(g,174,815,23,(settings.inputDb+24.f)/48.f,"INPUT",juce::String(settings.inputDb,1)+" dB",
              [this](float v){processor.setGlobal(0,v*48.f-24.f);},true);
-    drawKnob(g,287,833,23,settings.globalMix,"GLOBAL MIX",juce::String(int(settings.globalMix*100.f))+" %",
+    drawKnob(g,287,815,23,settings.globalMix,"GLOBAL MIX",juce::String(int(settings.globalMix*100.f))+" %",
              [this](float v){processor.setGlobal(2,v);},true);
-    drawKnob(g,401,833,23,(settings.outputDb+24.f)/48.f,"OUTPUT",juce::String(settings.outputDb,1)+" dB",
+    drawKnob(g,401,815,23,(settings.outputDb+24.f)/48.f,"OUTPUT",juce::String(settings.outputDb,1)+" dB",
              [this](float v){processor.setGlobal(1,v*48.f-24.f);},true);
     line(g,475,807,475,896,goldDark,1.5f);
     drawLabel(g,"INPUT PEAK",R{505,813,165,23},13,goldLight,false,juce::Justification::centredLeft,true);
@@ -448,7 +460,7 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
            [this,gate]{processor.setGateEnabled(!gate);},true,gate,12.f);
     drawLabel(g,"Stereo linked · no added hiss",R{1041,880,200,18},10,cream);
     const float threshold=processor.gateThreshold();
-    drawKnob(g,1280,833,22,(threshold+90.f)/75.f,"THRESHOLD",juce::String(threshold,0)+" dB",
+    drawKnob(g,1280,815,22,(threshold+90.f)/75.f,"THRESHOLD",juce::String(threshold,0)+" dB",
              [this](float v){processor.setGateThreshold(v*75.f-90.f);},true);
     line(g,1370,806,1370,896,goldDark,1.5f);
     drawLabel(g,"1973—2026",R{1390,812,170,40},26,goldLight,true,juce::Justification::centred);
@@ -483,7 +495,7 @@ void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
     if(has) {
         button(g,R{996,125,181,41},"HISTORY & SOUND",[this]{openHistory(selectedSlot);},true,false,13.f);
         drawLabel(g,familyText(meta.family),R{1190,123,180,26},13,ink,false,juce::Justification::centredRight,true);
-        drawLabel(g,yearText(meta.era),R{1250,148,115,43},31,goldDark,true,juce::Justification::centredRight);
+        drawLabel(g,yearForModel(stage.model),R{1250,148,115,43},31,goldDark,true,juce::Justification::centredRight);
     }
     line(g,155.f,194.f,1445.f,194.f,goldDark.withAlpha(.38f),1.f);
     line(g,627.f,217.f,627.f,712.f,goldDark.withAlpha(.35f),1.f);

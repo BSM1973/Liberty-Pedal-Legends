@@ -1,5 +1,7 @@
 # PEDAL LEGENDS — Liberty Music Software
 
+## Premium Blue & Gold UI · v0.2
+
 **Vintage Soul. Modern Power.**
 
 Clean-room, original project created from the supplied PEDAL LEGENDS specification (1973–2026). No other PEDAL LEGENDS implementation is imported.
