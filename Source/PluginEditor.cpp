@@ -288,7 +288,9 @@ void PedalLegendsAudioProcessorEditor::drawKnob(juce::Graphics& g,float x,float 
         const auto dx=std::cos(a),dy=std::sin(a);
         line(g,x+dx*(radius+2.f),y+dy*(radius+2.f),x+dx*(radius+6.f),y+dy*(radius+6.f),goldDark,1.f);
     }
-    drawLabel(g,title,R{x-radius-45.f,y+radius+13.f,2*radius+90.f,19.f},13.f,darkBackground?cream:ink,false,
+    // Compact MASTER knobs use non-overlapping caption rectangles.
+    const float captionHalfWidth=radius<=20.f?53.f:radius+45.f;
+    drawLabel(g,title,R{x-captionHalfWidth,y+radius+13.f,2.f*captionHalfWidth,19.f},13.f,darkBackground?cream:ink,false,
               juce::Justification::centred,true);
     if(display.isNotEmpty()) {
         const auto box=R{x-54.f,y+radius+38.f,108.f,26.f};
@@ -483,14 +485,14 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     }
     // The bottom bar uses the same visual language as the reference image.
     surface(g,R{23,790,1553,126},sapphire,midnight,8.f,goldDark);
-    drawLabel(g,"MASTER",R{33,826,90,18},14,goldLight,false,juce::Justification::centredLeft,true);
-    drawLabel(g,"SIGNAL",R{33,850,90,18},14,goldLight,false,juce::Justification::centredLeft,true);
+    drawLabel(g,"MASTER",R{33,826,72,18},14,goldLight,false,juce::Justification::centredLeft,true);
+    drawLabel(g,"SIGNAL",R{33,850,72,18},14,goldLight,false,juce::Justification::centredLeft,true);
     line(g,110,806,110,894,goldDark,1.5f);
-    drawKnob(g,174,815,23,(settings.inputDb+24.f)/48.f,"INPUT",juce::String(settings.inputDb,1)+" dB",
+    drawKnob(g,174,824,20,(settings.inputDb+24.f)/48.f,"INPUT",juce::String(settings.inputDb,1)+" dB",
              [this](float v){processor.setGlobal(0,v*48.f-24.f);},true);
-    drawKnob(g,287,815,23,settings.globalMix,"GLOBAL MIX",juce::String(int(settings.globalMix*100.f))+" %",
+    drawKnob(g,287,824,20,settings.globalMix,"GLOBAL MIX",juce::String(int(settings.globalMix*100.f))+" %",
              [this](float v){processor.setGlobal(2,v);},true);
-    drawKnob(g,401,815,23,(settings.outputDb+24.f)/48.f,"OUTPUT",juce::String(settings.outputDb,1)+" dB",
+    drawKnob(g,401,824,20,(settings.outputDb+24.f)/48.f,"OUTPUT",juce::String(settings.outputDb,1)+" dB",
              [this](float v){processor.setGlobal(1,v*48.f-24.f);},true);
     line(g,475,807,475,896,goldDark,1.5f);
     drawLabel(g,"INPUT PEAK",R{505,813,165,23},13,goldLight,false,juce::Justification::centredLeft,true);
@@ -500,14 +502,14 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     drawLabel(g,juce::String::fromUTF8("−60      −24      −12       0       +6"),R{552,868,182,18},10,muted);
     drawLabel(g,juce::String::fromUTF8("−60      −24      −12       0       +6"),R{803,868,182,18},10,muted);
     line(g,1018,807,1018,896,goldDark,1.5f);
-    drawLabel(g,"INPUT NOISE MANAGEMENT",R{1036,809,253,19},11,muted,false,
+    drawLabel(g,"INPUT NOISE MANAGEMENT",R{1036,809,185,19},11,muted,false,
               juce::Justification::centredLeft,true);
     const bool gate=processor.gateEnabled();
     button(g,R{1045,835,174,37},gate?"NOISE GATE ON":"NOISE GATE OFF",
            [this,gate]{processor.setGateEnabled(!gate);},true,gate,12.f);
-    drawLabel(g,juce::String::fromUTF8("Stereo linked · no added hiss"),R{1041,880,200,18},10,cream);
+    drawLabel(g,juce::String::fromUTF8("Stereo linked · no added hiss"),R{1041,880,181,18},10,cream);
     const float threshold=processor.gateThreshold();
-    drawKnob(g,1280,815,22,(threshold+90.f)/75.f,"THRESHOLD",juce::String(threshold,0)+" dB",
+    drawKnob(g,1280,824,19,(threshold+90.f)/75.f,"THRESHOLD",juce::String(threshold,0)+" dB",
              [this](float v){processor.setGateThreshold(v*75.f-90.f);},true);
     line(g,1370,806,1370,896,goldDark,1.5f);
     drawLabel(g,juce::String::fromUTF8("1973—2026"),R{1390,812,170,40},26,goldLight,true,juce::Justification::centred);
