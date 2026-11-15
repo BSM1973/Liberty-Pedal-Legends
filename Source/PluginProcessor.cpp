@@ -21,7 +21,7 @@ juce::String PedalLegendsAudioProcessor::parameterID(int slot,int component) {
 juce::AudioProcessorValueTreeState::ParameterLayout PedalLegendsAudioProcessor::makeLayout() {
     using namespace juce;
     std::vector<std::unique_ptr<RangedAudioParameter>> items;
-    items.reserve(74);
+    items.reserve(90);
     const auto models=modelNames();
     for(int s=0;s<pedal::kSlots;++s) {
         const auto prefix="Slot "+String(s+1)+" ";
@@ -29,9 +29,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout PedalLegendsAudioProcessor::
         items.push_back(std::make_unique<AudioParameterBool>(ParameterID(parameterID(s,1),1),prefix+"Enabled",false));
         items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("slot"+String(s+1)+"_mix",1),prefix+"Wet Dry",NormalisableRange<float>(0.f,1.f),1.f));
         items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("slot"+String(s+1)+"_level",1),prefix+"Level dB",NormalisableRange<float>(-18.f,18.f,.1f),0.f));
+        items.push_back(std::make_unique<AudioParameterBool>(ParameterID("slot"+String(s+1)+"_branch",1),prefix+"Parallel Lane B",s>=4));
         for(int c=0;c<pedal::kControls;++c)
             items.push_back(std::make_unique<AudioParameterFloat>(ParameterID(parameterID(s,c+2),1),prefix+"Control "+String(c+1),NormalisableRange<float>(0.f,1.f),.5f));
     }
+    items.push_back(std::make_unique<AudioParameterBool>(ParameterID("routing_parallel",1),"Parallel Routing",false));
+    items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("routing_blend",1),"Parallel A B Blend",NormalisableRange<float>(0.f,1.f),.5f));
     items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("global_input",1),"Input dB",NormalisableRange<float>(-24.f,24.f,.1f),0.f));
     items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("global_output",1),"Output dB",NormalisableRange<float>(-24.f,24.f,.1f),0.f));
     items.push_back(std::make_unique<AudioParameterFloat>(ParameterID("global_mix",1),"Global Wet Dry",NormalisableRange<float>(0.f,1.f),1.f));
@@ -50,6 +53,7 @@ PedalLegendsAudioProcessor::PedalLegendsAudioProcessor()
         ref.enabled=parameters.getRawParameterValue(parameterID(s,1));
         ref.mix=parameters.getRawParameterValue("slot"+juce::String(s+1)+"_mix");
         ref.level=parameters.getRawParameterValue("slot"+juce::String(s+1)+"_level");
+        ref.branch=parameters.getRawParameterValue("slot"+juce::String(s+1)+"_branch");
         for(int c=0;c<pedal::kControls;++c)
             ref.controls[size_t(c)]=parameters.getRawParameterValue(parameterID(s,c+2));
     }
@@ -57,6 +61,8 @@ PedalLegendsAudioProcessor::PedalLegendsAudioProcessor()
     outputGain=parameters.getRawParameterValue("global_output");
     mix=parameters.getRawParameterValue("global_mix");
     bypass=parameters.getRawParameterValue("global_bypass");
+    routingMode=parameters.getRawParameterValue("routing_parallel");
+    parallelBlendParam=parameters.getRawParameterValue("routing_blend");
     noiseGate=parameters.getRawParameterValue("global_gate");
     noiseGateThreshold=parameters.getRawParameterValue("global_gate_threshold");
     loadFactoryPreset(0);
@@ -81,6 +87,7 @@ pedal::Settings PedalLegendsAudioProcessor::snapshot() const noexcept {
         slot.enabled=ref.enabled->load(std::memory_order_relaxed)>.5f;
         slot.mix=std::clamp(ref.mix->load(std::memory_order_relaxed),0.f,1.f);
         slot.levelDb=std::clamp(ref.level->load(std::memory_order_relaxed),-18.f,18.f);
+        slot.branch=ref.branch->load(std::memory_order_relaxed)>.5f?1:0;
         for(int c=0;c<pedal::kControls;++c)
             slot.controls[size_t(c)]=std::clamp(ref.controls[size_t(c)]->load(std::memory_order_relaxed),0.f,1.f);
     }
@@ -88,6 +95,8 @@ pedal::Settings PedalLegendsAudioProcessor::snapshot() const noexcept {
     state.outputDb=outputGain->load(std::memory_order_relaxed);
     state.globalMix=mix->load(std::memory_order_relaxed);
     state.globalBypass=bypass->load(std::memory_order_relaxed)>.5f;
+    state.routing=routingMode->load(std::memory_order_relaxed)>.5f?pedal::RoutingMode::Parallel:pedal::RoutingMode::Series;
+    state.parallelBlend=std::clamp(parallelBlendParam->load(std::memory_order_relaxed),0.f,1.f);
     return state;
 }
 void PedalLegendsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer&) {
@@ -147,12 +156,15 @@ void PedalLegendsAudioProcessor::applySettings(const pedal::Settings& cfg) {
             setParameterValue(parameterID(s,c+2),slot.controls[size_t(c)]);
         setParameterValue("slot"+juce::String(s+1)+"_mix",slot.mix);
         setParameterValue("slot"+juce::String(s+1)+"_level",slot.levelDb);
+        setParameterValue("slot"+juce::String(s+1)+"_branch",float(slot.branch==1));
         setParameterValue(parameterID(s,1),slot.enabled?1.f:0.f);
     }
     setParameterValue("global_input",cfg.inputDb);
     setParameterValue("global_output",cfg.outputDb);
     setParameterValue("global_mix",cfg.globalMix);
     setParameterValue("global_bypass",cfg.globalBypass?1.f:0.f);
+    setParameterValue("routing_parallel",cfg.routing==pedal::RoutingMode::Parallel?1.f:0.f);
+    setParameterValue("routing_blend",std::clamp(cfg.parallelBlend,0.f,1.f));
 }
 void PedalLegendsAudioProcessor::restoreSettings(const pedal::Settings& settings) {
     applySettings(settings);
@@ -208,6 +220,7 @@ void PedalLegendsAudioProcessor::moveSlot(int from,int to) {
             setParameterValue(parameterID(s,c+2),stages[size_t(s)].controls[size_t(c)]);
         setParameterValue("slot"+juce::String(s+1)+"_mix",stages[size_t(s)].mix);
         setParameterValue("slot"+juce::String(s+1)+"_level",stages[size_t(s)].levelDb);
+        setParameterValue("slot"+juce::String(s+1)+"_branch",float(stages[size_t(s)].branch==1));
         setParameterValue(parameterID(s,1),stages[size_t(s)].enabled?1.f:0.f);
     }
     presetModified.store(true);
@@ -220,6 +233,19 @@ void PedalLegendsAudioProcessor::changeSlotEnabled(int slot,bool value) {
 void PedalLegendsAudioProcessor::setControl(int slot,int control,float value) {
     if(slot<0||slot>=pedal::kSlots||control<0||control>=pedal::kControls)return;
     setParameterValue(parameterID(slot,control+2),std::clamp(value,0.f,1.f));
+    presetModified.store(true);
+}
+void PedalLegendsAudioProcessor::setRoutingMode(pedal::RoutingMode mode) {
+    setParameterValue("routing_parallel",mode==pedal::RoutingMode::Parallel?1.f:0.f);
+    presetModified.store(true);
+}
+void PedalLegendsAudioProcessor::setRoutingBranch(int slot,int branch) {
+    if(slot<0||slot>=pedal::kSlots)return;
+    setParameterValue("slot"+juce::String(slot+1)+"_branch",float(branch!=0));
+    presetModified.store(true);
+}
+void PedalLegendsAudioProcessor::setParallelBlend(float blend) {
+    setParameterValue("routing_blend",std::clamp(blend,0.f,1.f));
     presetModified.store(true);
 }
 void PedalLegendsAudioProcessor::setSlotMix(int slot,float value) {

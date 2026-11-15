@@ -21,25 +21,27 @@ public:
     void mouseWheelMove(const juce::MouseEvent&, const juce::MouseWheelDetails&) override;
     bool keyPressed(const juce::KeyPress&) override;
 private:
-    enum class Screen { Board, Editor, History, Presets, Library };
+    enum class Screen { Board, Editor, History, Presets, Library, Routing };
     struct HotSpot {
         juce::Rectangle<float> bounds;
         std::function<void()> click;
         std::function<void(float)> drag;
         float value=0.f;
+        bool horizontal=false;
     };
     PedalLegendsAudioProcessor& processor;
     Screen screen=Screen::Board, returnScreen=Screen::Board;
     int selectedSlot=0, historyModel=1, historyTab=0, browserCategory=-1, libraryCategory=-1;
-    int browserOffset=0, libraryOffset=0;
+    int browserOffset=0, libraryOffset=0, browserMode=-1; // -1 all, 0 serial, 1 parallel
     float scale=1.f, xOffset=0.f, yOffset=0.f;
     std::vector<HotSpot> hotspots;
     std::function<void(float)> dragCallback;
-    float dragStart=0.f, dragY=0.f;
+    float dragStart=0.f, dragY=0.f, dragX=0.f, dragWidth=1.f;
+    bool dragHorizontalMode=false;
     juce::TextEditor search;
     juce::ComboBox languageSelector;
     int currentLanguage=0;
-    juce::String localized(const juce::String&) const;
+    juce::String localized(const juce::String& text) const;
     void languageChanged();
     std::unique_ptr<juce::FileChooser> fileChooser;
     pedal::Settings snapshotA{},snapshotB{};
@@ -65,6 +67,7 @@ private:
                 std::function<void()>,bool filled=false,bool highlighted=false,float size=13.f);
     void hit(juce::Rectangle<float>,std::function<void()>);
     void drag(juce::Rectangle<float>,float,std::function<void(float)>);
+    void dragHorizontal(juce::Rectangle<float>,float,std::function<void(float)>);
     void drawLabel(juce::Graphics&,const juce::String&,juce::Rectangle<float>,float,
                    juce::Colour,bool serif=false,juce::Justification=juce::Justification::centredLeft,bool bold=false);
     void drawKnob(juce::Graphics&,float,float,float,float,const juce::String&,
@@ -75,6 +78,7 @@ private:
     void drawEditor(juce::Graphics&);
     void drawHistory(juce::Graphics&);
     void drawPresets(juce::Graphics&);
+    void drawRouting(juce::Graphics&);
     void drawLibrary(juce::Graphics&);
     void drawOverlay(juce::Graphics&,juce::Rectangle<float>,const juce::String&,bool drawClose=true);
     void drawMeter(juce::Graphics&,juce::Rectangle<float>,float,const juce::String&);

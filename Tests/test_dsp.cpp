@@ -11,17 +11,18 @@
 
 using namespace pedal;
 constexpr int size=48000;
-std::vector<float> render(const Settings& setup, int rate=48000) {
+std::vector<float> render(const Settings& setup, int rate=48000, int frames=size) {
     Engine e;
     e.prepare(rate,2);
-    std::vector<float> l(size),r(size);
-    for (int i=0;i<size;++i) {
+    std::vector<float> l(static_cast<size_t>(frames));
+    std::vector<float> r(static_cast<size_t>(frames));
+    for (int i=0;i<frames;++i) {
         l[size_t(i)]=.1f*std::sin(2.f*3.14159265f*220.f*i/rate)+.03f*std::sin(2.f*3.14159265f*880.f*i/rate);
         r[size_t(i)]=.1f*std::sin(2.f*3.14159265f*329.6f*i/rate);
     }
-    for (int start=0;start<size;start+=128) {
+    for (int start=0;start<frames;start+=128) {
         float* channels[]={l.data()+start,r.data()+start};
-        e.process(channels,2,std::min(128,size-start),setup);
+        e.process(channels,2,std::min(128,frames-start),setup);
     }
     for (auto v:l) assert(std::isfinite(v) && std::abs(v)<=16.f);
     for (auto v:r) assert(std::isfinite(v) && std::abs(v)<=16.f);
@@ -102,9 +103,11 @@ int main() {
     for(int i=0;i<size;++i) assert(std::abs(bypassed[size_t(i)]-original[size_t(i)])<.00001f);
     assert(kModelCount==41);
     const auto& presets=factoryPresets();
-    assert(presets.size()==100);
+    assert(presets.size()==kFactoryPresetCount);
+    assert(kFactoryPresetCount==200);
     std::set<std::string> names;
     std::set<std::string> chains;
+    int verifiedSeries=0,verifiedParallel=0;
     for(int c=0;c<10;++c) {
         for(int n=0;n<10;++n) {
             const auto& preset=presets[size_t(c*10+n)];
@@ -120,12 +123,56 @@ int main() {
             }
             assert(chains.insert(key.str()).second);
             assert(active>=5);
-            auto rendered=render(preset.settings);
+            assert(preset.settings.routing==RoutingMode::Series);
+            ++verifiedSeries;
+            auto rendered=render(preset.settings,48000,4096);
             double energy=0.;
             for(auto v:rendered) energy+=double(v)*double(v);
             assert(energy>0.0001);
         }
     }
+    // 100 new parallel patches with independently adjustable two-branch routing.
+    for(int i=100;i<200;++i) {
+        const auto& preset=presets[size_t(i)];
+        assert(preset.settings.routing==RoutingMode::Parallel);
+        assert(preset.category==presets[size_t(i-100)].category);
+        assert(names.insert(preset.name).second);
+        int a=0,b=0;
+        for(const auto& slot:preset.settings.slots) if(slot.enabled && slot.model!=Model::Empty) {
+            if(slot.branch==0)++a;else ++b;
+        }
+        assert(a>0 && b>0);
+        const auto rendered=render(preset.settings,48000,4096);
+        double energy=0.;for(float v:rendered)energy+=double(v)*v;
+        assert(energy>.0001);
+        ++verifiedParallel;
+    }
+    assert(verifiedSeries==100 && verifiedParallel==100);
+    Settings parallelTest;
+    parallelTest.slots[0]={Model::VerdantDrive,true,info(Model::VerdantDrive).defaults};
+    parallelTest.slots[1]={Model::SteelFang,true,info(Model::SteelFang).defaults};
+    parallelTest.slots[0].branch=0;
+    parallelTest.slots[1].branch=1;
+    const auto oldSeries=render(parallelTest);
+    parallelTest.routing=RoutingMode::Parallel;
+    const auto newParallel=render(parallelTest);
+    double routeDiff=0;
+    for(int i=0;i<size;++i)routeDiff+=std::abs(oldSeries[size_t(i)]-newParallel[size_t(i)]);
+    assert(routeDiff>1.);
+    parallelTest.parallelBlend=0.f;
+    const auto laneA=render(parallelTest);
+    parallelTest.parallelBlend=1.f;
+    const auto laneB=render(parallelTest);
+    double laneDiff=0;
+    for(int i=0;i<size;++i)laneDiff+=std::abs(laneA[size_t(i)]-laneB[size_t(i)]);
+    assert(laneDiff>1.);
+    parallelTest.parallelBlend=.72f;
+    const auto beforeSwap=render(parallelTest);
+    std::swap(parallelTest.slots[0].branch,parallelTest.slots[1].branch);
+    const auto swappedLanes=render(parallelTest);
+    double branchDiff=0;
+    for(int i=0;i<size;++i)branchDiff+=std::abs(swappedLanes[size_t(i)]-beforeSwap[size_t(i)]);
+    assert(branchDiff>.1);
     // All advertised sample rates must process safely; mono is a separate bus layout.
     for(int rate:{44100,48000,88200,96000}) {
         Engine mono;
@@ -141,5 +188,5 @@ int main() {
             for(float x:input)assert(std::isfinite(x));
         }
     }
-    std::cout << "PASS: 40 effect models, 8 audio slots, stereo, order, bypass, independent instances, finite outputs, 100 factory presets\n";
+    std::cout << "PASS: 40 effect models, 8 audio slots, stereo, order, bypass, independent instances, finite outputs, 100 series + 100 parallel factory presets\n";
 }

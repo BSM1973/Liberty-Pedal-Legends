@@ -40,6 +40,9 @@ public:
     void changeSlotEnabled(int slot,bool value);
     void setControl(int slot,int control,float value);
     void setSlotMix(int slot,float value);
+    void setRoutingMode(pedal::RoutingMode mode);
+    void setRoutingBranch(int slot,int branch);
+    void setParallelBlend(float blend);
     void setSlotLevel(int slot,float db);
     void setGlobal(int which,float value);
     void restoreSettings(const pedal::Settings& settings);
@@ -61,18 +64,21 @@ private:
         std::atomic<float>* enabled=nullptr;
         std::atomic<float>* mix=nullptr;
         std::atomic<float>* level=nullptr;
+        std::atomic<float>* branch=nullptr;
         std::array<std::atomic<float>*,pedal::kControls> controls{};
     };
     std::array<SlotRefs,pedal::kSlots> refs{};
     std::atomic<float>* inputGain=nullptr;
     std::atomic<float>* outputGain=nullptr;
     std::atomic<float>* mix=nullptr;
+    std::atomic<float>* routingMode=nullptr;
+    std::atomic<float>* parallelBlendParam=nullptr;
     std::atomic<float>* bypass=nullptr;
     std::atomic<float>* noiseGate=nullptr;
     std::atomic<float>* noiseGateThreshold=nullptr;
     std::array<float,2> gateEnvelope{{0.f,0.f}};
     float gateGain=1.f;
-    std::atomic<int> uiLanguage{0}; // 0 French, 1 English, 2 Spanish
+    std::atomic<int> uiLanguage{0}; // 0 Français, 1 English, 2 Español
     std::atomic<int> factoryPresetIndex{0};
     std::atomic<bool> presetModified{false};
     std::atomic<float> inPeak{0.f},outPeak{0.f};

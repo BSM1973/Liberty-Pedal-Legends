@@ -35,12 +35,15 @@ struct ModelInfo {
 const std::array<ModelInfo, kModelCount>& catalog() noexcept;
 const ModelInfo& info(Model model) noexcept;
 
+enum class RoutingMode : int { Series = 0, Parallel = 1 };
+
 struct SlotSettings {
     Model model = Model::Empty;
     bool enabled = false;
     std::array<float, kControls> controls { .5f, .5f, .5f, .5f };
     float mix = 1.f;
     float levelDb = 0.f;
+    int branch = 0; // Parallel routing: 0 = lane A, 1 = lane B; travels with the pedal.
 };
 struct Settings {
     std::array<SlotSettings, kSlots> slots {};
@@ -48,6 +51,8 @@ struct Settings {
     float outputDb = 0.0f;
     float globalMix = 1.0f;
     bool globalBypass = false;
+    RoutingMode routing = RoutingMode::Series;
+    float parallelBlend = .5f; // 0 = A only, 1 = B only, linear unity-preserving blend.
 };
 
 class Engine {
@@ -101,6 +106,12 @@ private:
     float smoothedMix_ = 1.f;
     float smoothedGlobalOn_ = 1.f;
     bool masterInitialized_ = false;
+    float smoothedParallelBlend_ = .5f;
+    RoutingMode lastRouting_ = RoutingMode::Series;
+    std::array<int,kSlots> lastBranches_{};
+    std::array<float,kMaxChannels> previousOutput_{};
+    int routingFadeSamples_ = 0;
+    int routingFadeLength_ = 1;
     float processOne(Model model, ChannelState& state, int ch,
                      float sample, const std::array<float, kControls>& controls) noexcept;
 };

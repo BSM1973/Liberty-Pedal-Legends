@@ -105,6 +105,12 @@ void Engine::prepare(double sampleRate, int channels) {
     sr_ = clamp(float(sampleRate), 8000.f, 384000.f);
     preparedChannels_ = std::clamp(channels, 1, 2);
     masterInitialized_ = false;
+    lastRouting_ = RoutingMode::Series;
+    lastBranches_.fill(0);
+    previousOutput_.fill(0.f);
+    routingFadeSamples_ = 0;
+    routingFadeLength_ = std::max(32,int(sr_*.006));
+    smoothedParallelBlend_ = .5f;
     for (auto& slot : states_) {
         slot.lastModel = Model::Empty;
         slot.wet = 0.f;
@@ -121,6 +127,12 @@ void Engine::prepare(double sampleRate, int channels) {
 }
 void Engine::reset() noexcept {
     masterInitialized_ = false;
+    lastRouting_ = RoutingMode::Series;
+    lastBranches_.fill(0);
+    previousOutput_.fill(0.f);
+    routingFadeSamples_ = 0;
+    routingFadeLength_ = std::max(32,int(sr_*.006));
+    smoothedParallelBlend_ = .5f;
     for (auto& slot : states_) {
         slot.lastModel = Model::Empty;
         slot.wet = 0.f;
@@ -556,12 +568,27 @@ void Engine::process(float* const* audio, int channels, int numSamples,
     const float outGain = db(clamp(settings.outputDb,-24.f,24.f));
     const float globalMix = clamp(settings.globalMix,0.f,1.f);
     const float targetOn=settings.globalBypass?0.f:1.f;
+    const bool parallel = settings.routing == RoutingMode::Parallel;
+    if (settings.routing != lastRouting_) {
+        lastRouting_ = settings.routing;
+        routingFadeSamples_ = routingFadeLength_; // 6ms transition, no abrupt topology jump.
+    }
+    if (parallel) {
+        for(int i=0;i<kSlots;++i) {
+            const int branch=std::clamp(settings.slots[size_t(i)].branch,0,1);
+            if(branch!=lastBranches_[size_t(i)]) {
+                lastBranches_[size_t(i)]=branch;
+                routingFadeSamples_=routingFadeLength_;
+            }
+        }
+    }
     const float smooth = clamp(1.f-std::exp(-1.f/(float(sr_)*.008f)),.00001f,1.f);
     if (!masterInitialized_) {
         smoothedInputGain_=inGain;
         smoothedOutputGain_=outGain;
         smoothedMix_=globalMix;
         smoothedGlobalOn_=targetOn;
+        smoothedParallelBlend_=clamp(settings.parallelBlend,0.f,1.f);
         masterInitialized_=true;
     }
     for (int frame=0; frame<numSamples; ++frame) {
@@ -569,11 +596,15 @@ void Engine::process(float* const* audio, int channels, int numSamples,
         smoothedOutputGain_ += smooth*(outGain-smoothedOutputGain_);
         smoothedMix_ += smooth*(globalMix-smoothedMix_);
         smoothedGlobalOn_ += smooth*(targetOn-smoothedGlobalOn_);
+        smoothedParallelBlend_ += smooth*(clamp(settings.parallelBlend,0.f,1.f)-smoothedParallelBlend_);
         float dry[2]{};
         float wet[2]{};
+        float lane[2][2]{};
         for (int ch=0;ch<channels;++ch) {
             dry[ch]=audio[ch][frame];
             wet[ch]=dry[ch]*smoothedInputGain_;
+            lane[0][ch]=wet[ch];
+            lane[1][ch]=wet[ch]; // Real split: both lanes receive the unprocessed input.
         }
         for (int i=0;i<kSlots;++i) {
             auto& slot=states_[size_t(i)];
@@ -585,17 +616,29 @@ void Engine::process(float* const* audio, int channels, int numSamples,
             slot.smoothedMix+=smooth*(clamp(cfg.mix,0.f,1.f)-slot.smoothedMix);
             slot.smoothedLevel+=smooth*(db(clamp(cfg.levelDb,-18.f,18.f))-slot.smoothedLevel);
             if (slot.wet<.00001f) continue;
+            const int branch=std::clamp(cfg.branch,0,1);
             for (int ch=0;ch<channels;++ch) {
-                const float processed=processOne(cfg.model,slot.channel[size_t(ch)],ch,wet[ch],slot.smoothed);
-                const float mixed=wet[ch]*(1.f-slot.smoothedMix)+processed*slot.smoothedMix;
-                wet[ch]+=slot.wet*(mixed*slot.smoothedLevel-wet[ch]);
+                float& signal=parallel?lane[branch][ch]:wet[ch];
+                const float processed=processOne(cfg.model,slot.channel[size_t(ch)],ch,signal,slot.smoothed);
+                const float mixed=signal*(1.f-slot.smoothedMix)+processed*slot.smoothedMix;
+                signal+=slot.wet*(mixed*slot.smoothedLevel-signal);
             }
         }
         for (int ch=0;ch<channels;++ch) {
-            const float processed=(dry[ch]*(1.f-smoothedMix_)+wet[ch]*smoothedMix_)*smoothedOutputGain_;
+            // Two separately processed serial chains are combined after their last stage.
+            // Linear unity-gain blending avoids doubling fully correlated signals.
+            const float routed=parallel?(lane[0][ch]*(1.f-smoothedParallelBlend_)+
+                                         lane[1][ch]*smoothedParallelBlend_):wet[ch];
+            const float processed=(dry[ch]*(1.f-smoothedMix_)+routed*smoothedMix_)*smoothedOutputGain_;
             const float result=dry[ch]+smoothedGlobalOn_*(processed-dry[ch]);
-            audio[ch][frame]=std::isfinite(result)?clamp(result,-16.f,16.f):0.f;
+            const float stable=std::isfinite(result)?clamp(result,-16.f,16.f):0.f;
+            if(routingFadeSamples_>0) {
+                const float t=float(routingFadeSamples_)/float(routingFadeLength_);
+                audio[ch][frame]=previousOutput_[size_t(ch)]*t+stable*(1.f-t);
+            } else audio[ch][frame]=stable;
+            previousOutput_[size_t(ch)]=audio[ch][frame];
         }
+        if(routingFadeSamples_>0) --routingFadeSamples_;
     }
 }
 } // namespace pedal

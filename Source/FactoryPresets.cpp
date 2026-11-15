@@ -60,6 +60,7 @@ FactoryPreset make(int category,int variant) {
         SlotSettings& stage=chain.slots[size_t(slot)];
         stage.model=model;
         stage.enabled=true;
+        stage.branch=slot>=4?1:0;
         stage.controls=info(model).defaults;
         const float rotation=float((variant*7+slot*5+category*3)%17)/16.f;
         const float delta=(rotation-.5f)*.33f;
@@ -84,7 +85,7 @@ const std::array<FactoryPreset,kFactoryPresetCount>& factoryPresets() {
                 result[size_t(cat*10+variant)]=make(cat,variant);
         // A real, playable welcome chain matching the six populated slots in
         // the approved eight-slot pedalboard layout. The remaining 99 presets
-        // are generated as before; the library count remains exactly 100.
+        // are generated as before; the serial bank remains exactly 100.
         auto& welcome=result[0].settings;
         constexpr Model welcomeModels[]={Model::OpticalSilk,Model::VerdantDrive,
             Model::SculptEQ,Model::AzureChorus,Model::TapeVoyager,Model::GoldenPlate};
@@ -95,6 +96,39 @@ const std::array<FactoryPreset,kFactoryPresetCount>& factoryPresets() {
                 stage.enabled=slot!=3; // chorus initially bypassed like the reference
                 stage.controls=info(stage.model).defaults;
             } else stage=SlotSettings{};
+            stage.branch=slot>=4?1:0;
+        }
+        // New bank of 100 true parallel presets. The original 100 patches are
+        // untouched, with exactly the same indices and processing parameters.
+        static constexpr const char* variantNames[10]={
+            "Dual Paths", "Split Focus", "Layered Echo", "Two Worlds", "Stereo Cloud",
+            "Clean + Drive", "Branch Fusion", "Parallel Stage", "Twin Tones", "Studio Split"};
+        for(int cat=0;cat<10;++cat) for(int variant=0;variant<10;++variant) {
+            const int baseIndex=cat*10+variant;
+            auto copy=result[size_t(baseIndex)];
+            copy.name += " - ";
+            copy.name += variantNames[variant];
+            copy.settings.routing=RoutingMode::Parallel;
+            copy.settings.parallelBlend=std::clamp(.25f+.06f*float(variant)+.025f*float(cat%3),.18f,.85f);
+            int activeA=0,activeB=0;
+            for(int slot=0;slot<kSlots;++slot) {
+                auto& stage=copy.settings.slots[size_t(slot)];
+                stage.branch=(slot+variant/2+cat)%2;
+                // Different paths receive different character and effects mixes.
+                if(stage.model!=Model::Empty && stage.enabled) {
+                    if(stage.branch==0) ++activeA; else ++activeB;
+                    stage.mix=stage.branch==0?.95f:.83f;
+                    stage.levelDb=stage.branch==0?-1.2f:-2.4f;
+                }
+            }
+            // Preserve two audible lanes even for unusually sparse future patches.
+            if(activeA==0||activeB==0) {
+                for(int slot=0;slot<kSlots;++slot) {
+                    auto& stage=copy.settings.slots[size_t(slot)];
+                    if(stage.enabled && stage.model!=Model::Empty) {stage.branch=activeA==0?0:1;break;}
+                }
+            }
+            result[size_t(kSeriesPresetCount+baseIndex)]=std::move(copy);
         }
         return result;
     }();

@@ -5,7 +5,9 @@
 #include <string_view>
 
 namespace pedal {
-constexpr int kFactoryPresetCount = 100;
+constexpr int kSeriesPresetCount = 100;
+constexpr int kParallelPresetCount = 100;
+constexpr int kFactoryPresetCount = kSeriesPresetCount + kParallelPresetCount;
 constexpr int kPresetCategoryCount = 10;
 const std::array<std::string_view, kPresetCategoryCount>& presetCategories() noexcept;
 struct FactoryPreset {

@@ -139,7 +139,7 @@ juce::String PedalLegendsAudioProcessorEditor::localized(const juce::String& tex
 void PedalLegendsAudioProcessorEditor::languageChanged() {
     if(languageSelector.getSelectedId()<1)return;
     currentLanguage=liberty_ui::safeLanguage(languageSelector.getSelectedId()-1);
-    processor.setUILanguage(currentLanguage);
+    processor.setUILanguage(currentLanguage); // persisted with plugin state, not a DSP parameter
     search.setTextToShowWhenEmpty(localized("Rechercher..."),muted);
     repaint();
 }
@@ -195,7 +195,7 @@ void PedalLegendsAudioProcessorEditor::savePreset() {
     presets.createDirectory();
     auto name=juce::String(pedal::factoryPresets()[size_t(processor.selectedFactoryPreset())].name)
                    .retainCharacters("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-");
-    fileChooser=std::make_unique<juce::FileChooser>(juce::String::fromUTF8("Enregistrer le pédalier"),presets.getChildFile(name+".plegends"),"*.plegends");
+    fileChooser=std::make_unique<juce::FileChooser>(localized(juce::String::fromUTF8("Enregistrer le pédalier")),presets.getChildFile(name+".plegends"),"*.plegends");
     fileChooser->launchAsync(juce::FileBrowserComponent::saveMode|
                              juce::FileBrowserComponent::canSelectFiles|
                              juce::FileBrowserComponent::warnAboutOverwriting,
@@ -211,7 +211,7 @@ void PedalLegendsAudioProcessorEditor::savePreset() {
 void PedalLegendsAudioProcessorEditor::openUserPreset() {
     const auto folder=juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
                             .getChildFile("Liberty Music Software/Pedal Legends/Presets");
-    fileChooser=std::make_unique<juce::FileChooser>(juce::String::fromUTF8("Charger un pédalier"),folder,"*.plegends");
+    fileChooser=std::make_unique<juce::FileChooser>(localized(juce::String::fromUTF8("Charger un pédalier")),folder,"*.plegends");
     fileChooser->launchAsync(juce::FileBrowserComponent::openMode|
                             juce::FileBrowserComponent::canSelectFiles,
         [this](const juce::FileChooser& chooser) {
@@ -226,10 +226,10 @@ void PedalLegendsAudioProcessorEditor::openUserPreset() {
         });
 }
 void PedalLegendsAudioProcessorEditor::timerCallback() {
-    const int saved=liberty_ui::safeLanguage(processor.getUILanguage());
-    if(saved!=currentLanguage) {
-        currentLanguage=saved;
-        languageSelector.setSelectedId(saved+1,juce::dontSendNotification);
+    const int stored=liberty_ui::safeLanguage(processor.getUILanguage());
+    if(currentLanguage!=stored) {
+        currentLanguage=stored;
+        languageSelector.setSelectedId(stored+1,juce::dontSendNotification);
         search.setTextToShowWhenEmpty(localized("Rechercher..."),muted);
     }
     repaint();
@@ -241,7 +241,7 @@ void PedalLegendsAudioProcessorEditor::resized() {
     scale=std::min(getWidth()/canvasWidth,getHeight()/canvasHeight);
     xOffset=(getWidth()-canvasWidth*scale)*.5f;
     yOffset=(getHeight()-canvasHeight*scale)*.5f;
-    const auto menu=R{1138.f,48.f,151.f,33.f};
+    const auto menu=R{1138.f,48.f,151.f,33.f}; // header gap: 1118..1306
     languageSelector.setBounds(juce::Rectangle<int>(int(xOffset+menu.getX()*scale),int(yOffset+menu.getY()*scale),
                                                     int(menu.getWidth()*scale),int(menu.getHeight()*scale)));
     auto r=R(385.f,190.f,700.f,37.f);
@@ -254,14 +254,16 @@ void PedalLegendsAudioProcessorEditor::drawLabel(juce::Graphics& g,const juce::S
     g.setColour(colour);
     const auto fontName=serif?juce::Font::getDefaultSerifFontName():juce::Font::getDefaultSansSerifFontName();
     g.setFont(juce::Font(juce::FontOptions(fontName,size,bold?juce::Font::bold:juce::Font::plain)));
-    const auto cleaned=liberty_ui::safeTypography(localized(s));
-    g.drawFittedText(cleaned,r.toNearestInt(),alignment,2,.86f);
+    // Translate before drawing and replace non-portable ornament glyphs.
+    // Letter accents are preserved in UTF-8 and rendered using system fonts.
+    const auto safe=liberty_ui::safeTypography(localized(s));
+    g.drawFittedText(safe,r.toNearestInt(),alignment,2,.86f);
 }
 void PedalLegendsAudioProcessorEditor::hit(R r,std::function<void()> fn) {
     hotspots.push_back({r,std::move(fn),{},0.f});
 }
 void PedalLegendsAudioProcessorEditor::drag(R r,float value,std::function<void(float)> fn) {
-    hotspots.push_back({r,{},std::move(fn),std::clamp(value,0.f,1.f)});
+    hotspots.push_back({r,{},std::move(fn),std::clamp(value,0.f,1.f),false});
 }
 void PedalLegendsAudioProcessorEditor::button(juce::Graphics& g,R r,const juce::String& s,
                                               std::function<void()> fn,bool filled,bool selected,float size) {
@@ -270,6 +272,9 @@ void PedalLegendsAudioProcessorEditor::button(juce::Graphics& g,R r,const juce::
     drawLabel(g,s,r.reduced(4.f),size,filled?ink:(selected?goldLight:cream),false,
               juce::Justification::centred,true);
     if(fn)hit(r,std::move(fn));
+}
+void PedalLegendsAudioProcessorEditor::dragHorizontal(R r,float value,std::function<void(float)> fn) {
+    hotspots.push_back({r,{},std::move(fn),std::clamp(value,0.f,1.f),true});
 }
 void PedalLegendsAudioProcessorEditor::drawKnob(juce::Graphics& g,float x,float y,float radius,
                                                 float value,const juce::String& title,
@@ -317,17 +322,18 @@ void PedalLegendsAudioProcessorEditor::drawBackplate(juce::Graphics& g) {
     drawLabel(g,"PEDAL LEGENDS",R{106,34,365,49},36,goldLight,true,juce::Justification::centredLeft);
     drawLabel(g,"Vintage Soul. Modern Power.",R{107,83,360,22},16,gold,true);
     surface(g,R{492,17,626,84},navySoft,midnight,10.f,gold);
-    drawLabel(g,"LANGUE",R{1141,23,146,19},11,goldLight,false,juce::Justification::centred,true);
+    drawLabel(g,"LANGUE",R{1141,23,146,19},11,goldLight,false,
+              juce::Justification::centred,true);
     drawLabel(g,processor.isPresetModified()?juce::String::fromUTF8("• MODIFICATIONS NON ENREGISTRÉES"):juce::String::fromUTF8("• FACTORY / USER"),
               R{513,23,290,18},11,gold,false,juce::Justification::centredLeft,true);
-    const int index=std::clamp(processor.selectedFactoryPreset(),0,99);
+    const int index=std::clamp(processor.selectedFactoryPreset(),0,pedal::kFactoryPresetCount-1);
     const auto display=lastSavedPreset.isNotEmpty()?lastSavedPreset:
         juce::String(pedal::factoryPresets()[size_t(index)].name);
     drawLabel(g,display,R{514,46,360,42},23,cream,true);
     drawLabel(g,"FACTORY / USER",R{838,27,140,18},11,muted,false,juce::Justification::centred,true);
-    button(g,R{911,61,30,30},"<",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+99)%100);},false,false,18.f);
-    button(g,R{944,61,30,30},">",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+1)%100);},false,false,18.f);
-    button(g,R{983,47,120,41},"BROWSE  100",[this]{setScreen(Screen::Presets);},true,false,13.f);
+    button(g,R{911,61,30,30},"<",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+pedal::kFactoryPresetCount-1)%pedal::kFactoryPresetCount);},false,false,18.f);
+    button(g,R{944,61,30,30},">",[this]{processor.loadFactoryPreset((processor.selectedFactoryPreset()+1)%pedal::kFactoryPresetCount);},false,false,18.f);
+    button(g,R{983,47,120,41},"BROWSE  200",[this]{setScreen(Screen::Presets);},true,false,13.f);
     button(g,R{1306,18,67,37},"SAVE",[this]{savePreset();},true,false,12.f);
     button(g,R{1382,18,75,37},viewingB?"A / [B]":"[A] / B",[this]{toggleAB();},true,false,12.f);
     const bool bypass=processor.snapshot().globalBypass;
@@ -396,16 +402,20 @@ void PedalLegendsAudioProcessorEditor::drawPedal(juce::Graphics& g,R r,pedal::Mo
     g.setColour(state.enabled?amber:navy);
     g.fillEllipse(switchX-60,switchY-5,9.f,9.f);
     drawLabel(g,state.enabled?"ENGAGED":"BYPASS",R{switchX+22,switchY-10,68,19},9,cream,false,juce::Justification::centredLeft);
-    drawLabel(g,juce::String::fromUTF8("ORIGINAL MODEL  ·  LMS"),R{r.getX()+16,r.getBottom()-14,r.getWidth()-32,12},
+    drawLabel(g,"ORIGINAL MODEL - LMS",R{r.getX()+16,r.getBottom()-14,r.getWidth()-32,12},
               8.f,goldLight.withAlpha(.85f),false,juce::Justification::centred,true);
 }
 void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     surface(g,R{28,139,1544,641},navySoft,midnight,18.f,goldDark);
     drawLabel(g,juce::String::fromUTF8("• THE LIBERTY COLLECTION"),R{68,149,330,27},15,goldLight,false,juce::Justification::centredLeft,true);
     drawLabel(g,"40 ORIGINAL PEDALS",R{322,151,185,22},12,gold,false,juce::Justification::centredLeft,true);
-    drawLabel(g,juce::String::fromUTF8("IN   →   1  →  2  →  3  →  4   →   5  →  6  →  7  →  8   →   OUT"),
-              R{1000,149,534,25},12,goldLight,false,juce::Justification::centredRight,true);
+    button(g,R{536,146,132,27},"PEDALBOARD",[this]{setScreen(Screen::Board);},false,true,11.f);
+    button(g,R{681,146,140,27},"ROUTING",[this]{setScreen(Screen::Routing);},true,false,11.f);
     const auto settings=processor.snapshot();
+    drawLabel(g,settings.routing==pedal::RoutingMode::Series?
+              "IN  >  1  >  2  >  3  >  4  >  5  >  6  >  7  >  8  >  OUT":
+              "IN  >  SPLIT A / B  >  MIX  >  OUT", R{1000,149,534,25},12,goldLight,false,
+              juce::Justification::centredRight,true);
     std::array<R,pedal::kSlots> rects{};
     const float left=56.f,w=355.f,space=26.f;
     for(int i=0;i<8;++i) {
@@ -416,7 +426,7 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     // The inter-row U return is routed behind the transparent card surfaces.
     g.setColour(goldDark.withAlpha(.65f));
     juce::Path routing;
-    for(int k=0;k<3;++k){
+    if(settings.routing==pedal::RoutingMode::Series) for(int k=0;k<3;++k){
         const auto a=rects[size_t(k)],b=rects[size_t(k+1)];
         juce::Path segment;
         segment.startNewSubPath(a.getRight()-34,a.getY()+166.f);
@@ -428,8 +438,8 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     returnLine.cubicTo(1588.f,340.f,1587.f,466.f,1525.f,467.f);
     returnLine.lineTo(70.f,467.f);
     returnLine.cubicTo(42.f,467.f,38.f,504.f,95.f,565.f);
-    g.strokePath(returnLine,juce::PathStrokeType(5.f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
-    for(int k=4;k<7;++k){
+    if(settings.routing==pedal::RoutingMode::Series) g.strokePath(returnLine,juce::PathStrokeType(5.f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+    if(settings.routing==pedal::RoutingMode::Series) for(int k=4;k<7;++k){
         const auto a=rects[size_t(k)],b=rects[size_t(k+1)];
         juce::Path segment;
         segment.startNewSubPath(a.getRight()-34,a.getY()+166.f);
@@ -461,9 +471,9 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
             button(g,R{box.getX()+38,box.getBottom()-34,96,26},"EDIT PEDAL",[this,i]{selectSlot(i);},false,false,11.f);
             button(g,R{box.getX()+140,box.getBottom()-34,91,26},"LIBRARY  v",
                    [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,11.f);
-            button(g,R{box.getX()+239,box.getBottom()-34,31,26} ,"<",
+            button(g,R{box.getX()+239,box.getBottom()-34,31,26},"<",
                    [this,i]{if(i>0)processor.moveSlot(i,i-1);},false,false,19.f);
-            button(g,R{box.getX()+275,box.getBottom()-34,31,26},juce::String::fromUTF8("›"),
+            button(g,R{box.getX()+275,box.getBottom()-34,31,26},">",
                    [this,i]{if(i<7)processor.moveSlot(i,i+1);},false,false,19.f);
         } else {
             drawLabel(g,"EMPTY",R{box.getRight()-64,box.getY()+8,53,25},11,muted,false,juce::Justification::centred);
@@ -505,7 +515,7 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     drawLabel(g,"INPUT NOISE MANAGEMENT",R{1036,809,185,19},11,muted,false,
               juce::Justification::centredLeft,true);
     const bool gate=processor.gateEnabled();
-    button(g,R{1045,835,174,37},gate?"NOISE GATE ON":"NOISE GATE OFF",
+    button(g,R{1045,835,174,37},gate?juce::String::fromUTF8("●  NOISE GATE ON"):juce::String::fromUTF8("○  NOISE GATE OFF"),
            [this,gate]{processor.setGateEnabled(!gate);},true,gate,12.f);
     drawLabel(g,juce::String::fromUTF8("Stereo linked · no added hiss"),R{1041,880,181,18},10,cream);
     const float threshold=processor.gateThreshold();
@@ -515,7 +525,7 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     drawLabel(g,juce::String::fromUTF8("1973—2026"),R{1390,812,170,40},26,goldLight,true,juce::Justification::centred);
     drawLabel(g,juce::String::fromUTF8("VINTAGE SOUL  ·  MODERN POWER"),R{1390,853,172,19},9,gold,false,juce::Justification::centred,true);
     drawLabel(g,"Liberty",R{1407,873,142,27},19,goldLight,true,juce::Justification::centred);
-    drawLabel(g,juce::String::fromUTF8("LIBERTY PEDAL LEGENDS  ·  40 ORIGINAL MODELS  ·  EIGHT SERIAL AUDIO STAGES"),
+    drawLabel(g,settings.routing==pedal::RoutingMode::Series?juce::String("8 STAGES  -  SERIAL ROUTING"):juce::String("8 STAGES  -  TRUE PARALLEL A/B ROUTING"),
               R{33,913,800,17},10,muted,false,juce::Justification::centredLeft);
     drawLabel(g,juce::String::fromUTF8("LIBERTY MUSIC SOFTWARE   © 2026"),R{1210,913,347,17},10,gold,false,
               juce::Justification::centredRight);
@@ -535,7 +545,7 @@ void PedalLegendsAudioProcessorEditor::drawOverlay(juce::Graphics& g,R bounds,co
 }
 void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
     const R panel{151,91,1298,727};
-    drawOverlay(g,panel,"FOCUSED EDITOR   /   SIGNAL STAGE "+juce::String(selectedSlot+1).paddedLeft('0',2));
+    drawOverlay(g,panel,localized("FOCUSED EDITOR")+" / "+localized("stage_label")+juce::String(selectedSlot+1).paddedLeft('0',2));
     auto stage=processor.snapshot().slots[size_t(selectedSlot)];
     const bool has=stage.model!=pedal::Model::Empty;
     const auto& meta=pedal::info(stage.model);
@@ -577,7 +587,7 @@ void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
                  juce::String(stage.levelDb,1)+" dB",
                  [this](float v){processor.setSlotLevel(selectedSlot,v*36.f-18.f);});
         line(g,672.f,560.f,1406.f,560.f,goldDark.withAlpha(.28f));
-        button(g,R{683,598,155,42},stage.enabled?"PEDAL ON":"PEDAL OFF",
+        button(g,R{683,598,155,42},stage.enabled?juce::String::fromUTF8("●  PEDAL ON"):juce::String::fromUTF8("○  PEDAL OFF"),
                [this,on=stage.enabled]{processor.changeSlotEnabled(selectedSlot,!on);},false,stage.enabled,14.f);
         drawLabel(g,juce::String::fromUTF8("Quatre paramètres propres au modèle, mix et niveau indépendants."),
                   R{872,601,326,35},13,ink,true,juce::Justification::centred);
@@ -597,15 +607,16 @@ void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
     }
     drawLabel(g,juce::String::fromUTF8("Le déplacement échange les deux étages DSP, pas seulement leurs illustrations."),
               R{553,751,450,45},12,ink,true,juce::Justification::centred);
-    if(selectedSlot>0)button(g,R{1060,754,165,38},"< MOVE LEFT",
+    if(selectedSlot>0)button(g,R{1060,754,165,38},juce::String::fromUTF8("‹ MOVE LEFT"),
         [this]{processor.moveSlot(selectedSlot,selectedSlot-1);selectSlot(selectedSlot-1);},true,false,12.f);
-    if(selectedSlot<7)button(g,R{1231,754,170,38},"MOVE RIGHT >",
+    if(selectedSlot<7)button(g,R{1231,754,170,38},juce::String::fromUTF8("MOVE RIGHT ›"),
         [this]{processor.moveSlot(selectedSlot,selectedSlot+1);selectSlot(selectedSlot+1);},true,false,12.f);
 }
 void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     const R panel{103,64,1394,815};
     drawOverlay(g,panel,juce::String::fromUTF8("LIBERTY MUSIC SOFTWARE · ENCYCLOPÉDIE"),false);
     surface(g,R{109,71,1382,110},navySoft,midnight,11.f,gold);
+    // Vector book icon avoids missing glyphs and platform-dependent font fallback.
     g.setColour(goldLight);
     g.drawRoundedRectangle(R{157,109,36,30},4.f,1.7f);
     line(g,175,110,175,137,goldLight,1.5f);
@@ -637,10 +648,10 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     line(g,138,639,472,639,goldDark.withAlpha(.65f));
     drawLabel(g,"EXPLORER LES 40 FICHES",R{138,652,290,22},12,goldLight,false,
               juce::Justification::centredLeft,true);
-    button(g,R{137,683,39,40} ,"<",[this]{historyModel=historyModel<=1?40:historyModel-1;},false,false,21.f);
+    button(g,R{137,683,39,40},"<",[this]{historyModel=historyModel<=1?40:historyModel-1;},false,false,21.f);
     button(g,R{182,683,235,40},juce::String(std::string(md.name)),
            [this]{historyModel=historyModel==40?1:historyModel+1;},true,false,14.f);
-    button(g,R{423,683,40,40},juce::String::fromUTF8("›"),[this]{historyModel=historyModel>=40?1:historyModel+1;},false,false,21.f);
+    button(g,R{423,683,40,40},">",[this]{historyModel=historyModel>=40?1:historyModel+1;},false,false,21.f);
     drawLabel(g,juce::String::fromUTF8("La consultation ne charge aucune pédale."),R{137,726,328,17},11,cream,true);
     line(g,138,754,472,754,goldDark.withAlpha(.65f));
     drawLabel(g,juce::String::fromUTF8("DANS VOTRE PÉDALIER"),R{137,765,305,21},11,goldLight,false,
@@ -680,7 +691,9 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     const auto family=juce::String(std::string(md.family));
     if(historyTab==0) {
         labelSection('A',"L'HISTOIRE",256.f);
-        drawLabel(g,localized("intro_1")+localized(familyText(md.family))+localized("intro_2")+juce::String(std::string(md.era))+localized("intro_3")+title+localized("intro_4"),
+        drawLabel(g,localized("intro_1")+localized(familyText(md.family))+localized("intro_2")+
+                  juce::String(std::string(md.era))+localized("intro_3")+
+                  title+localized("intro_4"),
                   R{535,294,925,109},18,ink,true,juce::Justification::topLeft);
         labelSection('B',"INSPIRATIONS HISTORIQUES",418.f);
         drawLabel(g,juce::String::fromUTF8("Repères sonores et culturels, jamais une revendication de réplique officielle."),
@@ -727,54 +740,162 @@ void PedalLegendsAudioProcessorEditor::drawHistory(juce::Graphics& g) {
     drawLabel(g,"VINTAGE SOUL. MODERN POWER.",R{1140,840,321,22},12,goldDark,false,
               juce::Justification::centredRight,true);
 }
+void PedalLegendsAudioProcessorEditor::drawRouting(juce::Graphics& g) {
+    const R panel{123,93,1354,753};
+    drawOverlay(g,panel,localized("ROUTING")+"  /  "+localized("SIGNAL FLOW"));
+    const auto cfg=processor.snapshot();
+    const bool parallel=cfg.routing==pedal::RoutingMode::Parallel;
+    drawLabel(g,localized("SIGNAL ROUTING"),R{169,143,728,49},35,ink,true);
+    drawLabel(g,localized("Two independent audio paths, no external plugins"),
+              R{171,189,891,24},14,goldDark,true);
+    button(g,R{1123,145,276,43},localized("BACK TO PEDALBOARD"),
+           [this]{setScreen(Screen::Board);},true,false,13.f);
+    button(g,R{170,237,185,45},localized("SERIES"),[this]{processor.setRoutingMode(pedal::RoutingMode::Series);},
+           !parallel,!parallel,15.f);
+    button(g,R{369,237,212,45},localized("PARALLEL A/B"),[this]{processor.setRoutingMode(pedal::RoutingMode::Parallel);},
+           parallel,parallel,15.f);
+    drawLabel(g,parallel?localized("PARALLEL DESCRIPTION"):localized("SERIAL DESCRIPTION"),
+              R{611,236,766,51},17,ink,true);
+
+    // Routing diagram occupies the new tab only. Nothing here moves the original board.
+    auto node=[&](int id,R r,bool showSwitch,int targetBranch) {
+        const auto& slot=cfg.slots[size_t(id)];
+        const auto& metadata=pedal::info(slot.model);
+        surface(g,r,slot.enabled?navySoft:navy,midnight,9.f,goldDark);
+        drawLabel(g,juce::String(id+1).paddedLeft('0',2),
+                  R{r.getX()+9,r.getY()+5,32,24},18,goldLight,true);
+        drawLabel(g,slot.model==pedal::Model::Empty?localized("EMPTY"):
+                  juce::String(std::string(metadata.name)),
+                  R{r.getX()+6,r.getY()+30,r.getWidth()-12,30},15,cream,true,
+                  juce::Justification::centred,true);
+        drawLabel(g,slot.model==pedal::Model::Empty?"---":localized(familyText(metadata.family)),
+                  R{r.getX()+6,r.getY()+61,r.getWidth()-12,18},10,goldLight,false,
+                  juce::Justification::centred);
+        if(showSwitch) button(g,R{r.getX()+6,r.getBottom()-28,r.getWidth()-12,24},
+                             targetBranch==0?localized("MOVE TO B"):localized("MOVE TO A"),
+                             [this,id,targetBranch]{processor.setRoutingBranch(id,targetBranch==0?1:0);},
+                             false,false,10.f);
+    };
+    if(!parallel) {
+        surface(g,R{172,314,1224,337},navySoft,midnight,13.f,goldDark);
+        drawLabel(g,localized("SERIES PATH"),R{210,330,1100,35},20,goldLight,true);
+        const float y=414.f, start=224.f, step=141.5f;
+        line(g,196,y+42,1385,y+42,gold,4.f);
+        for(int i=0;i<pedal::kSlots;++i)node(i,R{start+i*step,y,130,92},false,0);
+        drawLabel(g,"IN",R{185,458,42,20},12,goldLight,false,juce::Justification::centred,true);
+        drawLabel(g,"OUT",R{1364,458,56,20},12,goldLight,false,juce::Justification::centred,true);
+        drawLabel(g,localized("SERIES NOTE"),R{218,566,1139,46},15,cream,true,
+                  juce::Justification::centred);
+    } else {
+        // Each lane shows its true serial order, derived from per-slot branch state.
+        std::array<std::vector<int>,2> lanes;
+        for(int i=0;i<pedal::kSlots;++i)lanes[size_t(cfg.slots[size_t(i)].branch==1?1:0)].push_back(i);
+        for(int branch=0;branch<2;++branch) {
+            const float y=326.f+branch*187.f;
+            surface(g,R{174,y,1224,166},navySoft,midnight,12.f,branch==0?goldDark:gold);
+            drawLabel(g,branch==0?localized("LANE A"):localized("LANE B"),
+                      R{193,y+12,91,31},19,goldLight,true);
+            line(g,293,y+102,1353,y+102,branch==0?gold:goldDark,3.5f);
+            if(lanes[size_t(branch)].empty()) {
+                drawLabel(g,localized("DIRECT SIGNAL"),R{581,y+56,595,35},22,cream,true,
+                          juce::Justification::centred);
+            } else {
+                const auto count=float(lanes[size_t(branch)].size());
+                const float column=1064.f/count;
+                const float width=std::min(136.f,column-12.f);
+                for(int k=0;k<int(count);++k) {
+                    const float center=300.f+(k+.5f)*column;
+                    node(lanes[size_t(branch)][size_t(k)],R{center-width*.5f,y+38,width,121},true,branch);
+                }
+            }
+        }
+        drawLabel(g,localized("SPLIT"),R{168,461,95,33},16,goldDark,true);
+        drawLabel(g,localized("MERGE"),R{1350,461,92,33},16,goldDark,true);
+    }
+    surface(g,R{174,724,1222,86},navySoft,midnight,9.f,goldDark);
+    drawLabel(g,localized("BLEND A/B"),R{206,735,238,30},18,goldLight,true);
+    drawLabel(g,"A",R{448,766,27,27},16,goldLight,false,juce::Justification::centred);
+    g.setColour(midnight);g.fillRoundedRectangle(R{481,768,621,20},8.f);
+    g.setColour(goldDark);g.drawRoundedRectangle(R{481,768,621,20},8.f,1.f);
+    g.setColour(goldLight);g.fillRoundedRectangle(R{484,771,615.f*cfg.parallelBlend,14},5.f);
+    const float handleX=484.f+615.f*cfg.parallelBlend;
+    g.setColour(cream);g.fillEllipse(handleX-9.f,767.f,18.f,22.f);
+    dragHorizontal(R{481,755,621,44},cfg.parallelBlend,[this](float value){processor.setParallelBlend(value);});
+    drawLabel(g,"B",R{1112,766,27,27},16,goldLight,false,juce::Justification::centred);
+    drawLabel(g,juce::String(int(cfg.parallelBlend*100.f))+" % B",R{1194,748,145,38},20,cream,true,
+              juce::Justification::centred);
+    drawLabel(g,localized("ROUTING MODE SAVED"),R{734,286,625,24},12,goldDark,false,
+              juce::Justification::centredRight);
+}
 void PedalLegendsAudioProcessorEditor::drawPresets(juce::Graphics& g) {
+    // Same plugin canvas, richer tiled navigator: three columns x three rows.
     const R panel{321,120,958,685};
-    drawOverlay(g,panel,juce::String::fromUTF8("BIBLIOTHÈQUE DE PRESETS · 100 PRESETS D'USINE"));
-    drawLabel(g,juce::String::fromUTF8("LE SON POUR CHAQUE ÉPOQUE"),R{383,141,742,42},28,ink,true);
-    drawLabel(g,"Rechercher parmi 10 familles musicales",R{385,225,700,24},14,goldDark,true);
+    drawOverlay(g,panel,localized("PRESET LIBRARY 200"));
+    drawLabel(g,localized("200 FACTORY PRESETS"),R{383,141,748,41},30,ink,true);
+    drawLabel(g,localized("SEARCH PRESETS"),R{385,225,700,24},14,goldDark,true);
     for(int i=0;i<11;++i) {
         const int row=i/6,col=i%6;
-        const auto rect=R{377+float(col)*145,263+float(row)*40,139,34};
-        const auto caption=i==0?juce::String("TOUTES"):
+        const R rect{377+float(col)*145,263+float(row)*40,139,34};
+        const auto caption=i==0?juce::String("ALL"):
             juce::String(std::string(pedal::presetCategories()[size_t(i-1)]));
         button(g,rect,caption,[this,i]{browserCategory=i-1;browserOffset=0;},
                browserCategory==i-1,browserCategory==i-1,10.f);
     }
+    button(g,R{382,350,121,37},localized("ALL 200"),[this]{browserMode=-1;browserOffset=0;},
+           browserMode==-1,browserMode==-1,12.f);
+    button(g,R{510,350,143,37},localized("SERIES 100"),[this]{browserMode=0;browserOffset=0;},
+           browserMode==0,browserMode==0,12.f);
+    button(g,R{661,350,163,37},localized("PARALLEL 100"),[this]{browserMode=1;browserOffset=0;},
+           browserMode==1,browserMode==1,12.f);
     std::vector<int> matches;
     const auto term=search.getText().trim();
-    for(int i=0;i<pedal::kFactoryPresetCount;++i){
+    for(int i=0;i<pedal::kFactoryPresetCount;++i) {
         const auto& preset=pedal::factoryPresets()[size_t(i)];
+        if(browserMode>=0 && int(preset.settings.routing)!=browserMode)continue;
         if(browserCategory>=0&&preset.category!=std::string(pedal::presetCategories()[size_t(browserCategory)]))continue;
         if(!term.isEmpty()&&!juce::String(preset.name).containsIgnoreCase(term))continue;
         matches.push_back(i);
     }
-    browserOffset=std::clamp(browserOffset,0,std::max(0,int(matches.size())-10));
-    drawLabel(g,juce::String::fromUTF8("FACTORY  ·  ")+juce::String(matches.size())+juce::String::fromUTF8(" résultats"),R{386,356,535,30},16,ink,true);
-    for(int i=0;i<10&&browserOffset+i<int(matches.size());++i){
+    constexpr int pageSize=9;
+    browserOffset=std::clamp(browserOffset,0,std::max(0,int(matches.size())-pageSize));
+    drawLabel(g,juce::String(matches.size())+" "+localized("RESULTS"),
+              R{852,352,310,32},14,ink,false,juce::Justification::centredRight,true);
+    for(int i=0;i<pageSize && browserOffset+i<int(matches.size());++i) {
         const int actual=matches[size_t(browserOffset+i)];
-        const auto& preset=pedal::factoryPresets()[size_t(actual)];
-        const R r{385,391+float(i)*30.f,812,28};
-        if(actual==processor.selectedFactoryPreset()){
-            g.setColour(goldLight.withAlpha(.46f));g.fillRoundedRectangle(r,4.f);
-        }
-        button(g,r,juce::String(actual+1).paddedLeft('0',3)+"   "+juce::String(preset.name)+
-               juce::String::fromUTF8("      ·      ")+juce::String(preset.category),
-               [this,actual]{processor.loadFactoryPreset(actual);lastSavedPreset.clear();setScreen(Screen::Board);},
-               actual==processor.selectedFactoryPreset(),false,12.8f);
+        const auto& pr=pedal::factoryPresets()[size_t(actual)];
+        const int col=i%3,row=i/3;
+        const R card{382.f+float(col)*282.f,400.f+float(row)*98.f,271.f,89.f};
+        const bool selected=actual==processor.selectedFactoryPreset();
+        surface(g,card,selected?goldLight:paper,cream,8.f,selected?gold:goldDark);
+        const auto textColor=ink;
+        drawLabel(g,juce::String(actual+1).paddedLeft('0',3),
+                  R{card.getX()+11,card.getY()+8,47,23},16,goldDark,false,
+                  juce::Justification::centredLeft,true);
+        drawLabel(g,pr.settings.routing==pedal::RoutingMode::Series?localized("SERIES"):localized("PARALLEL A/B"),
+                  R{card.getX()+112,card.getY()+8,148,22},11,goldDark,false,
+                  juce::Justification::centredRight,true);
+        drawLabel(g,juce::String(pr.name),
+                  R{card.getX()+12,card.getY()+33,card.getWidth()-24,29},17,textColor,true,
+                  juce::Justification::centredLeft,true);
+        const auto category=localized(juce::String(pr.category));
+        drawLabel(g,category,R{card.getX()+12,card.getY()+65,card.getWidth()-24,18},11,goldDark,false);
+        hit(card,[this,actual]{processor.loadFactoryPreset(actual);lastSavedPreset.clear();setScreen(Screen::Board);});
     }
-    drawLabel(g,"PAGE  "+juce::String(browserOffset+1)+juce::String::fromUTF8("–")+
-              juce::String(std::min(int(matches.size()),browserOffset+10))+" / "+juce::String(matches.size()),
-              R{390,706,462,26},14,ink,true);
-    button(g,R{940,705,102,35},juce::String::fromUTF8("PRÉCÉDENT"),[this]{browserOffset=std::max(0,browserOffset-10);},true,false,11.f);
-    button(g,R{1048,705,113,35},"SUIVANT",[this,maxItems=int(matches.size())]{browserOffset=std::min(std::max(0,maxItems-10),browserOffset+10);},
+    drawLabel(g,localized("PAGE")+"  "+juce::String(matches.empty()?0:browserOffset+1)+"-"+
+              juce::String(std::min(int(matches.size()),browserOffset+pageSize))+" / "+juce::String(matches.size()),
+              R{386,704,503,31},14,ink,true);
+    button(g,R{945,703,107,35},localized("PREVIOUS"),
+           [this]{browserOffset=std::max(0,browserOffset-pageSize);},true,false,11.f);
+    button(g,R{1058,703,108,35},localized("NEXT"),
+           [this,maxItems=int(matches.size())]{browserOffset=std::min(std::max(0,maxItems-pageSize),browserOffset+pageSize);},
            true,false,11.f);
-    button(g,R{768,756,427,35},"OUVRIR UN PRESET UTILISATEUR  (.plegends)",
+    button(g,R{760,755,433,35},localized("USER PRESET"),
            [this]{openUserPreset();},true,false,12.f);
 }
 void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
     const R panel{251,117,1098,709};
     drawOverlay(g,panel,juce::String::fromUTF8("LA COLLECTION LIBERTY  ·  40 MODÈLES DSP"));
-    drawLabel(g,juce::String::fromUTF8("CHOISIR LA PÉDALE DE L'EMPLACEMENT ")+juce::String(selectedSlot+1),
+    drawLabel(g,localized("choose_slot")+juce::String(selectedSlot+1),
               R{383,139,885,44},27,ink,true);
     drawLabel(g,juce::String::fromUTF8("Rechercher un modèle, une famille ou une époque"),R{385,230,700,24},14,goldDark,true);
     static constexpr const char* families[]={"Overdrive","Distortion","Fuzz","Boost / Preamp","Compressor",
@@ -798,7 +919,7 @@ void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
         matches.push_back(i);
     }
     libraryOffset=std::clamp(libraryOffset,0,std::max(0,int(matches.size())-12));
-    drawLabel(g,juce::String(matches.size())+juce::String::fromUTF8(" pédales dans cette sélection"),
+    drawLabel(g,juce::String(matches.size())+" "+localized(juce::String::fromUTF8("pédales dans cette sélection")),
               R{287,375,700,30},17,ink,true);
     for(int k=0;k<12&&libraryOffset+k<int(matches.size());++k){
         const int i=matches[size_t(libraryOffset+k)];
@@ -812,13 +933,13 @@ void PedalLegendsAudioProcessorEditor::drawLibrary(juce::Graphics& g) {
         g.setColour(gold);g.drawRoundedRectangle(R{r.getX()+8,r.getY()+9,58,49},6.f,1.5f);
         drawLabel(g,juce::String(std::string(item.name)),R{r.getX()+79,r.getY()+7,243,29},20,ink,true,
                   juce::Justification::centredLeft,true);
-        drawLabel(g,familyText(item.family)+juce::String::fromUTF8("  ·  ")+juce::String(std::string(item.era)),
+        drawLabel(g,localized(familyText(item.family))+"  -  "+juce::String(std::string(item.era)),
                   R{r.getX()+79,r.getY()+37,242,22},10,goldDark,false);
         hit(r,[this,i]{showModel(i);});
     }
     button(g,R{278,750,197,41},"EMPLACEMENT VIDE",[this]{showModel(0);},true,false,12.f);
-    button(g,R{972,750,142,41},juce::String::fromUTF8("‹ PRÉCÉDENT"),[this]{libraryOffset=std::max(0,libraryOffset-12);},true,false,11.f);
-    button(g,R{1119,750,176,41},juce::String::fromUTF8("SUIVANT ›"),[this,maxItems=int(matches.size())]{
+    button(g,R{972,750,142,41},"< "+localized(juce::String::fromUTF8("PRÉCÉDENT")),[this]{libraryOffset=std::max(0,libraryOffset-12);},true,false,11.f);
+    button(g,R{1119,750,176,41},localized("SUIVANT")+" >",[this,maxItems=int(matches.size())]{
         libraryOffset=std::min(std::max(0,maxItems-12),libraryOffset+12);
     },true,false,11.f);
 }
@@ -833,6 +954,7 @@ void PedalLegendsAudioProcessorEditor::paint(juce::Graphics& g) {
         case Screen::History:drawHistory(g);break;
         case Screen::Presets:drawPresets(g);break;
         case Screen::Library:drawLibrary(g);break;
+        case Screen::Routing:drawRouting(g);break;
         case Screen::Board:break;
     }
 }
@@ -843,6 +965,13 @@ void PedalLegendsAudioProcessorEditor::handleClick(juce::Point<float> p) {
             dragCallback=i->drag;
             dragStart=i->value;
             dragY=p.y;
+            dragX=p.x;
+            dragWidth=std::max(1.f,i->bounds.getWidth());
+            dragHorizontalMode=i->horizontal;
+            if(i->horizontal) {
+                dragStart=std::clamp((p.x-i->bounds.getX())/dragWidth,0.f,1.f);
+                dragCallback(dragStart);
+            }
         } else if(i->click) i->click();
         return;
     }
@@ -855,7 +984,8 @@ void PedalLegendsAudioProcessorEditor::mouseDown(const juce::MouseEvent& e) {
 void PedalLegendsAudioProcessorEditor::mouseDrag(const juce::MouseEvent& e) {
     if(!dragCallback)return;
     const auto p=logicalPoint(e.getPosition());
-    dragCallback(std::clamp(dragStart+(dragY-p.y)/170.f,0.f,1.f));
+    dragCallback(std::clamp(dragHorizontalMode?dragStart+(p.x-dragX)/dragWidth:
+                            dragStart+(dragY-p.y)/170.f,0.f,1.f));
     repaint();
 }
 void PedalLegendsAudioProcessorEditor::mouseUp(const juce::MouseEvent&) {dragCallback={};}
