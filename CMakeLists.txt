@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(PedalLegends VERSION 0.6.0 LANGUAGES C CXX)
+project(PedalLegends VERSION 0.6.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(PEDAL_LEGENDS_BUILD_TESTS "Build portable DSP tests" ON)
@@ -26,6 +26,8 @@ if(PEDAL_LEGENDS_BUILD_TESTS)
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Tests/test_history80.py")
     add_test(NAME PedalLegendsMidiLearnUI
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Tests/test_midi_learn.py")
+    add_test(NAME PedalLegendsInstallers
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Tests/test_installers.py")
   endif()
 endif()
 if(PEDAL_LEGENDS_BUILD_PLUGIN)

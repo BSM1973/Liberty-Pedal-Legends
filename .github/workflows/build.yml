@@ -1,11 +1,16 @@
-name: PEDAL LEGENDS - Premium Blue Gold AU VST3
+name: PEDAL LEGENDS - AU VST3 and PKG EXE installers
+
 on:
   push:
   pull_request:
   workflow_dispatch:
+
+env:
+  PEDAL_LEGENDS_VERSION: "0.6.1"
+
 jobs:
   native:
-    name: ${{ matrix.os }} - native plugin
+    name: ${{ matrix.os }} - native plugin and installer
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -13,26 +18,59 @@ jobs:
         os: [macos-15, windows-2022]
     steps:
       - uses: actions/checkout@v4
-      - name: Configure JUCE 8.0.10
+
+      - name: Configure JUCE 8.0.10 (macOS Intel + Apple Silicon)
+        if: runner.os == 'macOS'
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DPEDAL_LEGENDS_BUILD_PLUGIN=ON -DPEDAL_LEGENDS_BUILD_TESTS=ON
+
+      - name: Configure JUCE 8.0.10 (Windows x64)
+        if: runner.os == 'Windows'
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPEDAL_LEGENDS_BUILD_PLUGIN=ON -DPEDAL_LEGENDS_BUILD_TESTS=ON
+
       - name: Build DSP tests and native formats
         run: cmake --build build --config Release --parallel 3
+
       - name: Run portable DSP regression tests
         run: ctest --test-dir build -C Release --output-on-failure
+
       - name: Upload native plugin artifacts
         uses: actions/upload-artifact@v4
         with:
           name: pedal-legends-${{ matrix.os }}-native
           path: build/PedalLegends_artefacts/Release/
-          if-no-files-found: warn
+          if-no-files-found: error
+
+      - name: Package macOS AU + VST3 as universal PKG
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          MACOS_INSTALLER_IDENTITY: ${{ secrets.MACOS_INSTALLER_IDENTITY }}
+        run: bash Installer/macos/build_pkg.sh "$PEDAL_LEGENDS_VERSION"
+
+      - name: Package Windows x64 VST3 as EXE
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./Installer/windows/build_installer.ps1 -Version "$env:PEDAL_LEGENDS_VERSION"
+
+      - name: Upload finished platform installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: PEDAL-LEGENDS-${{ matrix.os }}-INSTALLER
+          path: dist/installers/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 60
+
   dsp-linux:
-    name: Ubuntu - portable DSP checks
+    name: Ubuntu - portable DSP and installer checks
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Validate macOS installer shell script
+        run: bash -n Installer/macos/build_pkg.sh
       - name: Configure without JUCE
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPEDAL_LEGENDS_BUILD_PLUGIN=OFF -DPEDAL_LEGENDS_BUILD_TESTS=ON
       - name: Build
         run: cmake --build build --parallel 4
-      - name: Run DSP tests
+      - name: Run DSP and packaging regression tests
         run: ctest --test-dir build --output-on-failure

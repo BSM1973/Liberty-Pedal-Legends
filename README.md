@@ -1,5 +1,12 @@
 # PEDAL LEGENDS — Liberty Music Software
 
+## v0.6.1 - Mac/Windows installers
+
+GitHub Actions now creates a **macOS universal AU+VST3 `.pkg`** and a
+**Windows x64 VST3 `.exe`** alongside the native plugins. See
+[`Installer/README.md`](Installer/README.md) for installation targets,
+verification, and signature/notarization requirements.
+
 ## v0.6.0 - Right-click MIDI Learn
 
 - Right-click any working knob in the focused editor, the three miniature pedal knobs, the pedal footswitch, master/gate controls or the routing blend to select **Learn MIDI CC** or **Clear MIDI CC**. Routing A/B and lane branch buttons are also MIDI assignable.
