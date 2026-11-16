@@ -1,41 +1,59 @@
-# PEDAL LEGENDS installers (v0.6.1)
+# PEDAL LEGENDS — installation macOS et Windows
 
-The GitHub Actions workflow builds real, self-contained installers from the
-compiled native plugin artifacts. No source code or host binaries are embedded
-as placeholders.
+Le workflow GitHub Actions crée un installateur universel macOS AU + VST3 et
+un programme d'installation Windows x64 VST3. Le moteur DSP, le pédalier
+1600 × 930, les 80 modèles et les 400 presets ne sont pas modifiés.
 
-## macOS: universal AU + VST3 PKG
-The GitHub macos-15 builder compiles both x86_64 and arm64 in the same plugins.
-`Installer/macos/build_pkg.sh` validates these two architectures before it
-packages the bundles using `pkgbuild`.
+## Notarisation Apple — exactement comme ECHO 86
 
-System-wide install destinations:
-- `/Library/Audio/Plug-Ins/Components/PEDAL LEGENDS.component` (AU)
-- `/Library/Audio/Plug-Ins/VST3/PEDAL LEGENDS.vst3` (VST3)
+Le dépôt ECHO 86 `BSM1973/Liberty-ECHO-86` utilise six secrets GitHub
+Actions. Utiliser **les mêmes noms** dans
+`BSM1973/Liberty-Pedal-Legends` (pas besoin de nouveaux certificats) :
 
-With no Developer ID Installer identity in the runner keychain, the resulting
-package is named `*-unsigned.pkg` and **is not notarized by Apple**.
-Apple Developer ID Installer signing uses `productsign` if
-`MACOS_INSTALLER_IDENTITY` is configured **and the certificate is present in
-the runner keychain**. Signing and notarization for public distribution
-require the developer's own Apple credentials; do not commit them to Git.
+- `APPLE_DEVELOPER_ID_APPLICATION_P12_BASE64`
+- `APPLE_DEVELOPER_ID_INSTALLER_P12_BASE64`
+- `APPLE_P12_PASSWORD`
+- `APPLE_NOTARY_APPLE_ID`
+- `APPLE_NOTARY_APP_PASSWORD`
+- `APPLE_NOTARY_TEAM_ID`
 
-## Windows: VST3 x64 installer EXE
-`Installer/windows/build_installer.ps1` uses Inno Setup. It copies the
-complete VST3 bundle to
-`C:\Program Files\Common Files\VST3\PEDAL LEGENDS.vst3`, registers an
-uninstaller, and requires administrator privileges. The generated `.exe` is
-**not Authenticode signed** without the publisher's signing certificate and
-may produce a Windows SmartScreen warning.
+Les secrets définis au niveau du dépôt ECHO 86 ne sont **pas** automatiquement
+accessibles depuis PEDAL LEGENDS. S'ils n'ont pas été configurés au niveau
+de l'organisation, les ajouter dans GitHub →
+`Liberty-Pedal-Legends` → Settings → Secrets and variables → Actions.
+Utiliser les valeurs sauvegardées hors de GitHub : les secrets existants
+ne peuvent pas être relus en clair sur GitHub. Ne jamais copier les
+certificats ni mots de passe dans un dépôt ou une conversation.
 
-## Downloads and validation
-Navigate to the green GitHub Actions run and expand **Artifacts**:
-- `PEDAL-LEGENDS-macos-15-INSTALLER` contains one `.pkg`
-- `PEDAL-LEGENDS-windows-2022-INSTALLER` contains one `.exe`
+Sur `main`, Actions refuse de produire un artefact commercial si l'un
+des six secrets manque. Quand ils sont présents :
+1. Les certificats Developer ID Application et Developer ID Installer sont
+   importés dans un trousseau temporaire du runner macOS.
+2. Les bundles universels AU/VST3 sont signés avec Hardened Runtime,
+   un timestamp Apple et Developer ID Application.
+3. Le `.pkg` est signé avec Developer ID Installer.
+4. `xcrun notarytool submit --wait` attend la décision Apple.
+5. Après `Accepted` seulement, `xcrun stapler staple`,
+   `stapler validate`, `spctl --assess` et `pkgutil --check-signature`
+   vérifient le paquet.
 
-GitHub downloads each artifact as a ZIP: extract the installer, then run the
-`.pkg` or `.exe`. Also available: native format bundles for advanced users.
+Le résultat commercial s'appelle
+`PEDAL-LEGENDS-macOS-SIGNED-NOTARIZED` et contient le `.pkg`.
+En pull request (non fiable), les secrets ne sont jamais utilisés : un
+`PEDAL-LEGENDS-macOS-TEST-UNSIGNED` est identifié comme test uniquement.
 
-Both installers need host-level testing in Ableton Live and other DAWs.
-Only after Apple signing/notarization and Windows code signing should these
-packages be presented as fully trusted, commercial distribution builds.
+## Contenu
+
+- macOS universel : AU dans
+  `/Library/Audio/Plug-Ins/Components/PEDAL LEGENDS.component` et VST3 dans
+  `/Library/Audio/Plug-Ins/VST3/PEDAL LEGENDS.vst3`.
+- Windows x64 : `C:\Program Files\Common Files\VST3\PEDAL LEGENDS.vst3`,
+  avec désinstallation via Inno Setup. Windows nécessite séparément une
+  signature Authenticode pour éviter certains avertissements SmartScreen.
+
+## Télécharger
+
+Ouvrir `Actions` → `PEDAL LEGENDS - Mac notarized PKG and Windows EXE`,
+puis le dernier run vert sur `main`. Télécharger les archives des
+installateurs dans **Artifacts** et extraire le `.pkg` ou `.exe`.
+Tester ensuite les plugins dans les DAW cibles avant distribution.
