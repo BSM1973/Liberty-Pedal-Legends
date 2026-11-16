@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(PedalLegends VERSION 0.5.0 LANGUAGES C CXX)
+project(PedalLegends VERSION 0.6.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(PEDAL_LEGENDS_BUILD_TESTS "Build portable DSP tests" ON)
@@ -24,6 +24,8 @@ if(PEDAL_LEGENDS_BUILD_TESTS)
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Tests/test_routing_layout.py")
     add_test(NAME PedalLegendsHistory80
       COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Tests/test_history80.py")
+    add_test(NAME PedalLegendsMidiLearnUI
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Tests/test_midi_learn.py")
   endif()
 endif()
 if(PEDAL_LEGENDS_BUILD_PLUGIN)
@@ -46,7 +48,7 @@ if(PEDAL_LEGENDS_BUILD_PLUGIN)
     FORMATS ${PLUGIN_FORMATS}
     PRODUCT_NAME "PEDAL LEGENDS"
     IS_SYNTH FALSE
-    NEEDS_MIDI_INPUT FALSE
+    NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS TRUE
@@ -59,6 +61,7 @@ if(PEDAL_LEGENDS_BUILD_PLUGIN)
     Source/PluginEditor.h
     Source/UILocalization.h
     Source/PedalPalette.h
+    Source/MidiLearn.h
     Source/FactoryPresets.h)
   target_link_libraries(PedalLegends PRIVATE
     PedalLegendsDSP juce::juce_audio_utils juce::juce_dsp

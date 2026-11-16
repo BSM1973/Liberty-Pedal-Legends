@@ -18,6 +18,27 @@ juce::String PedalLegendsAudioProcessor::parameterID(int slot,int component) {
     if(component==1)return prefix+"on";
     return prefix+"p"+juce::String(component-1);
 }
+juce::String PedalLegendsAudioProcessor::midiParameterID(int target) {
+    using namespace pedal::midi;
+    if(target<0||target>=kTargetCount)return {};
+    if(target<kSlots*kPerSlot) {
+        const int s=target/kPerSlot,c=target%kPerSlot;
+        const auto prefix="slot"+juce::String(s+1)+"_";
+        switch(c) {
+            case Enabled:return parameterID(s,1);
+            case Mix:return prefix+"mix";
+            case Level:return prefix+"level";
+            case Branch:return prefix+"branch";
+            case Control1:case Control2:case Control3:case Control4:
+                return parameterID(s,c-2); // Control1 (4) => p1 (component 2)
+            default:return {};
+        }
+    }
+    static const char* globals[]={"global_input","global_output","global_mix",
+       "global_bypass","global_gate","global_gate_threshold",
+       "routing_parallel","routing_blend"};
+    return globals[target-kSlots*kPerSlot];
+}
 juce::AudioProcessorValueTreeState::ParameterLayout PedalLegendsAudioProcessor::makeLayout() {
     using namespace juce;
     std::vector<std::unique_ptr<RangedAudioParameter>> items;
@@ -65,7 +86,14 @@ PedalLegendsAudioProcessor::PedalLegendsAudioProcessor()
     parallelBlendParam=parameters.getRawParameterValue("routing_blend");
     noiseGate=parameters.getRawParameterValue("global_gate");
     noiseGateThreshold=parameters.getRawParameterValue("global_gate_threshold");
+    for(int i=0;i<pedal::midi::kTargetCount;++i) {
+        midiCC[size_t(i)].store(-1,std::memory_order_relaxed);
+        midiPending[size_t(i)].store(-1,std::memory_order_relaxed);
+        midiParameters[size_t(i)]=parameters.getParameter(midiParameterID(i));
+        jassert(midiParameters[size_t(i)]!=nullptr);
+    }
     loadFactoryPreset(0);
+    startTimerHz(30); // MIDI remains functional when the plugin editor is closed.
 }
 bool PedalLegendsAudioProcessor::isBusesLayoutSupported(const BusesLayout& b) const {
     auto ins=b.getMainInputChannelSet(),outs=b.getMainOutputChannelSet();
@@ -99,8 +127,9 @@ pedal::Settings PedalLegendsAudioProcessor::snapshot() const noexcept {
     state.parallelBlend=std::clamp(parallelBlendParam->load(std::memory_order_relaxed),0.f,1.f);
     return state;
 }
-void PedalLegendsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer&) {
+void PedalLegendsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer& messages) {
     juce::ScopedNoDenormals noDenormals;
+    receiveMidiControllers(messages); // Audio thread: atomic writes only.
     const int inputChannels=getTotalNumInputChannels();
     const int channels=std::min(inputChannels,buffer.getNumChannels());
     for(int c=channels;c<buffer.getNumChannels();++c)buffer.clear(c,0,buffer.getNumSamples());
@@ -136,6 +165,56 @@ void PedalLegendsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,j
     for(int c=0;c<channels;++c)after=std::max(after,buffer.getMagnitude(c,0,buffer.getNumSamples()));
     inPeak.store(std::min(before,4.f),std::memory_order_relaxed);
     outPeak.store(std::min(after,4.f),std::memory_order_relaxed);
+}
+void PedalLegendsAudioProcessor::beginMidiLearn(int target) noexcept {
+    if(target>=0&&target<pedal::midi::kTargetCount)
+        waitingMidiLearn.store(target,std::memory_order_release);
+}
+void PedalLegendsAudioProcessor::cancelMidiLearn() noexcept {
+    waitingMidiLearn.store(-1,std::memory_order_release);
+}
+void PedalLegendsAudioProcessor::clearMidiLearn(int target) noexcept {
+    if(target<0||target>=pedal::midi::kTargetCount)return;
+    midiCC[size_t(target)].store(-1,std::memory_order_release);
+    midiPending[size_t(target)].store(-1,std::memory_order_release);
+    if(waitingMidiLearn.load(std::memory_order_acquire)==target)cancelMidiLearn();
+}
+int PedalLegendsAudioProcessor::midiControllerFor(int target) const noexcept {
+    return target>=0&&target<pedal::midi::kTargetCount
+        ?midiCC[size_t(target)].load(std::memory_order_acquire):-1;
+}
+void PedalLegendsAudioProcessor::receiveMidiControllers(const juce::MidiBuffer& messages) noexcept {
+    for(const auto metadata:messages) {
+        const auto msg=metadata.getMessage();
+        if(!msg.isController())continue;
+        const int encoded=pedal::midi::encode(msg.getChannel(),msg.getControllerNumber());
+        if(encoded<0)continue; // Ignore channel-mode messages.
+        const int target=waitingMidiLearn.exchange(-1,std::memory_order_acq_rel);
+        if(target>=0&&target<pedal::midi::kTargetCount) {
+            // One MIDI controller addresses one target per channel.
+            for(int i=0;i<pedal::midi::kTargetCount;++i)
+                if(i!=target&&midiCC[size_t(i)].load(std::memory_order_relaxed)==encoded)
+                    midiCC[size_t(i)].store(-1,std::memory_order_release);
+            midiCC[size_t(target)].store(encoded,std::memory_order_release);
+        }
+        for(int i=0;i<pedal::midi::kTargetCount;++i)
+            if(midiCC[size_t(i)].load(std::memory_order_relaxed)==encoded)
+                midiPending[size_t(i)].store(msg.getControllerValue(),std::memory_order_release);
+    }
+}
+void PedalLegendsAudioProcessor::timerCallback() {
+    // Host notifications on the JUCE message thread, never inside audio DSP.
+    for(int i=0;i<pedal::midi::kTargetCount;++i) {
+        const int value=midiPending[size_t(i)].exchange(-1,std::memory_order_acq_rel);
+        if(value<0)continue;
+        auto* param=midiParameters[size_t(i)];
+        if(param==nullptr)continue;
+        const float normalized=juce::jlimit(0.f,1.f,float(value)/127.f);
+        param->beginChangeGesture();
+        param->setValueNotifyingHost(normalized);
+        param->endChangeGesture();
+        presetModified.store(true,std::memory_order_relaxed);
+    }
 }
 void PedalLegendsAudioProcessor::setParameterValue(const juce::String& id,float realValue) {
     if(auto* parameter=parameters.getParameter(id)) {
@@ -269,6 +348,12 @@ void PedalLegendsAudioProcessor::getStateInformation(juce::MemoryBlock& out) {
     state.setProperty("FactoryPresetIndex",factoryPresetIndex.load(),nullptr);
     state.setProperty("FactoryPresetModified",presetModified.load(),nullptr);
     state.setProperty("UILanguage",getUILanguage(),nullptr);
+    // Maps live in host project state, not in the factory preset bank.
+    // Older projects without these properties remain loadable.
+    for(int i=0;i<pedal::midi::kTargetCount;++i) {
+        const int cc=midiCC[size_t(i)].load(std::memory_order_acquire);
+        if(cc>=0)state.setProperty("MidiCC_"+juce::String(i),cc,nullptr);
+    }
     if(auto xml=state.createXml())copyXmlToBinary(*xml,out);
 }
 void PedalLegendsAudioProcessor::setStateInformation(const void* input,int size) {
@@ -278,6 +363,14 @@ void PedalLegendsAudioProcessor::setStateInformation(const void* input,int size)
             const int preset=std::clamp(int(state.getProperty("FactoryPresetIndex",0)),0,pedal::kFactoryPresetCount-1);
             const bool changed=bool(state.getProperty("FactoryPresetModified",false));
             setUILanguage(int(state.getProperty("UILanguage",0)));
+            cancelMidiLearn();
+            for(int i=0;i<pedal::midi::kTargetCount;++i) {
+                const int saved=int(state.getProperty("MidiCC_"+juce::String(i),-1));
+                const int channel=pedal::midi::channel(saved);
+                const int controller=pedal::midi::controller(saved);
+                midiCC[size_t(i)].store(pedal::midi::encode(channel,controller),std::memory_order_release);
+                midiPending[size_t(i)].store(-1,std::memory_order_release);
+            }
             parameters.replaceState(state);
             factoryPresetIndex.store(preset);
             presetModified.store(changed);

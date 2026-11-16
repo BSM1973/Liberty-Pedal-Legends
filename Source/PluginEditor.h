@@ -28,6 +28,7 @@ private:
         std::function<void(float)> drag;
         float value=0.f;
         bool horizontal=false;
+        int midiTarget=-1;
     };
     PedalLegendsAudioProcessor& processor;
     Screen screen=Screen::Board, returnScreen=Screen::Board;
@@ -63,15 +64,17 @@ private:
     void showModel(int model);
     juce::Point<float> logicalPoint(juce::Point<int>) const;
     void handleClick(juce::Point<float>);
+    int midiTargetAt(juce::Point<float>) const noexcept;
+    void showMidiLearnMenu(const juce::MouseEvent&,int target);
     void button(juce::Graphics&,juce::Rectangle<float>,const juce::String&,
-                std::function<void()>,bool filled=false,bool highlighted=false,float size=13.f);
-    void hit(juce::Rectangle<float>,std::function<void()>);
-    void drag(juce::Rectangle<float>,float,std::function<void(float)>);
-    void dragHorizontal(juce::Rectangle<float>,float,std::function<void(float)>);
+                std::function<void()>,bool filled=false,bool highlighted=false,float size=13.f,int midiTarget=-1);
+    void hit(juce::Rectangle<float>,std::function<void()>,int midiTarget=-1);
+    void drag(juce::Rectangle<float>,float,std::function<void(float)>,int midiTarget=-1);
+    void dragHorizontal(juce::Rectangle<float>,float,std::function<void(float)>,int midiTarget=-1);
     void drawLabel(juce::Graphics&,const juce::String&,juce::Rectangle<float>,float,
                    juce::Colour,bool serif=false,juce::Justification=juce::Justification::centredLeft,bool bold=false);
     void drawKnob(juce::Graphics&,float,float,float,float,const juce::String&,
-                  const juce::String&,std::function<void(float)>,bool darkBackground=false);
+                  const juce::String&,std::function<void(float)>,bool darkBackground=false,int midiTarget=-1);
     void drawBackplate(juce::Graphics&);
     void drawBoard(juce::Graphics&);
     void drawPedal(juce::Graphics&,juce::Rectangle<float>,pedal::Model,const pedal::SlotSettings&,bool large=false);

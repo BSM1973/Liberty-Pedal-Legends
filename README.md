@@ -1,5 +1,15 @@
 # PEDAL LEGENDS — Liberty Music Software
 
+## v0.6.0 - Right-click MIDI Learn
+
+- Right-click any working knob in the focused editor, the three miniature pedal knobs, the pedal footswitch, master/gate controls or the routing blend to select **Learn MIDI CC** or **Clear MIDI CC**. Routing A/B and lane branch buttons are also MIDI assignable.
+- MIDI input is enabled for AU and VST3; select an active MIDI input and route MIDI to the audio-plugin track in your DAW.
+- 72 stable assignable targets (eight per slot plus eight global controls), channel-aware CC 0-119; one assignment per target. MIDI CC 120-127 reserved for channel mode.
+- Audio thread only writes lock-free atomic pending values. A processor-owned 30 Hz message-thread timer performs host parameter notifications even with the editor closed.
+- MIDI assignments are stored with the project state and survive preset changes. Loading an older project without mapping data is safe.
+- Main pedalboard remains exactly 1600×930 with no changes to button, knob, pedal or routing geometry.
+- Map changes do not alter factory presets, audio algorithms, history pages or colour palettes.
+
 ## v0.5.0 — 400 factory presets (200 series + 200 parallel)
 
 **Backward compatibility is preserved:** the original 200 factory presets remain byte-for-byte equivalent in name, index, routing, model settings and level parameters. Their stable positions are 0–99 (series) and 100–199 (parallel). Exactly 100 new serial patches are appended at indices 200–299, and 100 new parallel A/B patches at indices 300–399.

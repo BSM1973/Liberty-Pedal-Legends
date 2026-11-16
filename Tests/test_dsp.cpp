@@ -1,6 +1,7 @@
 #include "PedalDSP.h"
 #include "FactoryPresets.h"
 #include "PedalPalette.h"
+#include "MidiLearn.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -32,6 +33,18 @@ std::vector<float> render(const Settings& setup, int rate=48000, int frames=size
     return l;
 }
 int main() {
+    static_assert(pedal::midi::kTargetCount==72,"MIDI target count should remain stable");
+    static_assert(pedal::midi::slot(7,pedal::midi::Control4)==63,"Last pedal control");
+    static_assert(pedal::midi::global(pedal::midi::ParallelBlend)==71,"Last global control");
+    static_assert(pedal::midi::encode(1,74)==74,"MIDI channel 1 encoding");
+    static_assert(pedal::midi::encode(16,119)==2039,"MIDI channel 16 encoding");
+    static_assert(pedal::midi::encode(1,121)==-1,"Channel mode CC reserved");
+    for(int channel=1;channel<=16;++channel)
+        for(int cc=0;cc<120;++cc) {
+            const int packed=pedal::midi::encode(channel,cc);
+            assert(pedal::midi::channel(packed)==channel);
+            assert(pedal::midi::controller(packed)==cc);
+        }
     assert(catalog().size()==kModelCount);
     assert(kSlots==8);
     // The 80 pedals have exactly 13 coherent visual families, with

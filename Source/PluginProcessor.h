@@ -2,11 +2,13 @@
 #include <JuceHeader.h>
 #include "PedalDSP.h"
 #include "FactoryPresets.h"
+#include "MidiLearn.h"
 #include <array>
 #include <atomic>
 #include <algorithm>
 
-class PedalLegendsAudioProcessor final : public juce::AudioProcessor {
+class PedalLegendsAudioProcessor final : public juce::AudioProcessor,
+                                         private juce::Timer {
 public:
     PedalLegendsAudioProcessor();
     ~PedalLegendsAudioProcessor() override = default;
@@ -16,7 +18,7 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override { return true; }
     const juce::String getName() const override { return "PEDAL LEGENDS"; }
-    bool acceptsMidi() const override { return false; }
+    bool acceptsMidi() const override { return true; }
     bool producesMidi() const override { return false; }
     bool isMidiEffect() const override { return false; }
     double getTailLengthSeconds() const override { return 2.1; }
@@ -57,7 +59,16 @@ public:
     int selectedFactoryPreset() const noexcept { return factoryPresetIndex.load(); }
     float inputPeak() const noexcept { return inPeak.load(); }
     float outputPeak() const noexcept { return outPeak.load(); }
+    // MIDI Learn is linked to stable slot/global parameter IDs, not to model names.
+    void beginMidiLearn(int target) noexcept;
+    void cancelMidiLearn() noexcept;
+    void clearMidiLearn(int target) noexcept;
+    int midiLearnTarget() const noexcept {return waitingMidiLearn.load(std::memory_order_acquire);}
+    int midiControllerFor(int target) const noexcept;
 private:
+    void timerCallback() override;
+    void receiveMidiControllers(const juce::MidiBuffer&) noexcept;
+    static juce::String midiParameterID(int target);
     pedal::Engine engine;
     struct SlotRefs {
         std::atomic<float>* model=nullptr;
@@ -82,6 +93,13 @@ private:
     std::atomic<int> factoryPresetIndex{0};
     std::atomic<bool> presetModified{false};
     std::atomic<float> inPeak{0.f},outPeak{0.f};
+    // Audio-thread producer / message-thread consumer. No UI callbacks, locks
+    // or allocations in processBlock; parameter host notifications are made
+    // on the message thread even while the editor window is closed.
+    std::array<std::atomic<int>,pedal::midi::kTargetCount> midiCC{};
+    std::array<std::atomic<int>,pedal::midi::kTargetCount> midiPending{};
+    std::array<juce::RangedAudioParameter*,pedal::midi::kTargetCount> midiParameters{};
+    std::atomic<int> waitingMidiLearn{-1};
     void applySettings(const pedal::Settings& s);
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PedalLegendsAudioProcessor)
 };

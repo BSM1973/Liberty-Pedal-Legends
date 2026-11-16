@@ -262,26 +262,26 @@ void PedalLegendsAudioProcessorEditor::drawLabel(juce::Graphics& g,const juce::S
     const auto safe=liberty_ui::safeTypography(localized(s));
     g.drawFittedText(safe,r.toNearestInt(),alignment,2,.86f);
 }
-void PedalLegendsAudioProcessorEditor::hit(R r,std::function<void()> fn) {
-    hotspots.push_back({r,std::move(fn),{},0.f});
+void PedalLegendsAudioProcessorEditor::hit(R r,std::function<void()> fn,int target) {
+    hotspots.push_back({r,std::move(fn),{},0.f,false,target});
 }
-void PedalLegendsAudioProcessorEditor::drag(R r,float value,std::function<void(float)> fn) {
-    hotspots.push_back({r,{},std::move(fn),std::clamp(value,0.f,1.f),false});
+void PedalLegendsAudioProcessorEditor::drag(R r,float value,std::function<void(float)> fn,int target) {
+    hotspots.push_back({r,{},std::move(fn),std::clamp(value,0.f,1.f),false,target});
 }
 void PedalLegendsAudioProcessorEditor::button(juce::Graphics& g,R r,const juce::String& s,
-                                              std::function<void()> fn,bool filled,bool selected,float size) {
+                                              std::function<void()> fn,bool filled,bool selected,float size,int midiTarget) {
     surface(g,r,filled?goldLight:(selected?sapphire:navySoft),filled?gold:navy,
              std::min(6.f,r.getHeight()*.24f),goldDark);
     drawLabel(g,s,r.reduced(4.f),size,filled?ink:(selected?goldLight:cream),false,
               juce::Justification::centred,true);
-    if(fn)hit(r,std::move(fn));
+    if(fn)hit(r,std::move(fn),midiTarget);
 }
-void PedalLegendsAudioProcessorEditor::dragHorizontal(R r,float value,std::function<void(float)> fn) {
-    hotspots.push_back({r,{},std::move(fn),std::clamp(value,0.f,1.f),true});
+void PedalLegendsAudioProcessorEditor::dragHorizontal(R r,float value,std::function<void(float)> fn,int target) {
+    hotspots.push_back({r,{},std::move(fn),std::clamp(value,0.f,1.f),true,target});
 }
 void PedalLegendsAudioProcessorEditor::drawKnob(juce::Graphics& g,float x,float y,float radius,
                                                 float value,const juce::String& title,
-                                                const juce::String& display,std::function<void(float)> setter,bool darkBackground) {
+                                                const juce::String& display,std::function<void(float)> setter,bool darkBackground,int midiTarget) {
     const R shadow{x-radius+2.f,y-radius+3.f,radius*2,radius*2};
     g.setColour(midnight.withAlpha(.7f));g.fillEllipse(shadow);
     g.setGradientFill(juce::ColourGradient(goldLight,{x-radius,y-radius},goldDark,{x+radius,y+radius},false));
@@ -306,7 +306,7 @@ void PedalLegendsAudioProcessorEditor::drawKnob(juce::Graphics& g,float x,float 
         g.setColour(goldDark.withAlpha(.35f));g.drawRoundedRectangle(box,4.f,.9f);
         drawLabel(g,display,box,13.f,darkBackground?cream:ink,false,juce::Justification::centred);
     }
-    if(setter)drag(R{x-radius-7.f,y-radius-7.f,2*(radius+7.f),2*(radius+7.f)},value,std::move(setter));
+    if(setter)drag(R{x-radius-7.f,y-radius-7.f,2*(radius+7.f),2*(radius+7.f)},value,std::move(setter),midiTarget);
 }
 void PedalLegendsAudioProcessorEditor::drawBackplate(juce::Graphics& g) {
     g.fillAll(midnight);
@@ -341,7 +341,7 @@ void PedalLegendsAudioProcessorEditor::drawBackplate(juce::Graphics& g) {
     button(g,R{1382,18,75,37},viewingB?"A / [B]":"[A] / B",[this]{toggleAB();},true,false,12.f);
     const bool bypass=processor.snapshot().globalBypass;
     button(g,R{1465,18,112,37},bypass?"BYPASSED":"BYPASS",
-           [this,bypass]{processor.setGlobal(3,bypass?0.f:1.f);},true,bypass,12.f);
+           [this,bypass]{processor.setGlobal(3,bypass?0.f:1.f);},true,bypass,12.f,pedal::midi::global(pedal::midi::Bypass));
     drawMeter(g,R{1338,78,95,12},processor.inputPeak(),"IN");
     drawMeter(g,R{1487,78,88,12},processor.outputPeak(),"OUT");
 }
@@ -468,14 +468,24 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
             button(g,R{box.getRight()-165,box.getY()+8,108,23},"HISTORY & SOUND",
                    [this,i]{openHistory(i);},false,false,9.5f);
             button(g,R{box.getRight()-50,box.getY()+8,42,23},stage.enabled?"ON":"BYPASS",
-                   [this,i,on=stage.enabled]{processor.changeSlotEnabled(i,!on);},false,stage.enabled,9.5f);
+                   [this,i,on=stage.enabled]{processor.changeSlotEnabled(i,!on);},false,stage.enabled,9.5f,
+                   pedal::midi::slot(i,pedal::midi::Enabled));
             const R enclosure{box.getX()+37,box.getY()+39,box.getWidth()-74,202};
             drawPedal(g,enclosure,stage.model,stage);
             // Clicking the enclosure opens the focused editor; the actual
             // footswitch has a more specific hotspot added afterward.
             hit(enclosure,[this,i]{selectSlot(i);});
+            // Pedal artwork's three knobs accept right-click MIDI Learn,
+            // while a normal left click still opens the focused editor.
+            for(int control=0;control<3;++control) {
+                const float x=enclosure.getX()+enclosure.getWidth()*(.205f+.295f*control);
+                const float y=enclosure.getY()+enclosure.getHeight()*.52f;
+                hit(R{x-19.f,y-19.f,38.f,38.f},[this,i]{selectSlot(i);},
+                    pedal::midi::slot(i,pedal::midi::Control1+control));
+            }
             hit(R{enclosure.getCentreX()-26,enclosure.getBottom()-63,52,52},
-                [this,i,on=stage.enabled]{processor.changeSlotEnabled(i,!on);});
+                [this,i,on=stage.enabled]{processor.changeSlotEnabled(i,!on);},
+                pedal::midi::slot(i,pedal::midi::Enabled));
             button(g,R{box.getX()+38,box.getBottom()-34,96,26},"EDIT PEDAL",[this,i]{selectSlot(i);},false,false,11.f);
             button(g,R{box.getX()+140,box.getBottom()-34,91,26},"LIBRARY",
                    [this,i]{selectedSlot=i;libraryCategory=-1;setScreen(Screen::Library);},false,false,10.f);
@@ -507,11 +517,11 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
     drawLabel(g,"SIGNAL",R{33,850,72,18},14,goldLight,false,juce::Justification::centredLeft,true);
     line(g,110,806,110,894,goldDark,1.5f);
     drawKnob(g,174,824,20,(settings.inputDb+24.f)/48.f,"INPUT",juce::String(settings.inputDb,1)+" dB",
-             [this](float v){processor.setGlobal(0,v*48.f-24.f);},true);
+             [this](float v){processor.setGlobal(0,v*48.f-24.f);},true,pedal::midi::global(pedal::midi::Input));
     drawKnob(g,287,824,20,settings.globalMix,"GLOBAL MIX",juce::String(int(settings.globalMix*100.f))+" %",
-             [this](float v){processor.setGlobal(2,v);},true);
+             [this](float v){processor.setGlobal(2,v);},true,pedal::midi::global(pedal::midi::WetDry));
     drawKnob(g,401,824,20,(settings.outputDb+24.f)/48.f,"OUTPUT",juce::String(settings.outputDb,1)+" dB",
-             [this](float v){processor.setGlobal(1,v*48.f-24.f);},true);
+             [this](float v){processor.setGlobal(1,v*48.f-24.f);},true,pedal::midi::global(pedal::midi::Output));
     line(g,475,807,475,896,goldDark,1.5f);
     drawLabel(g,"INPUT PEAK",R{505,813,165,23},13,goldLight,false,juce::Justification::centredLeft,true);
     drawLabel(g,"OUTPUT PEAK",R{754,813,167,23},13,goldLight,false,juce::Justification::centredLeft,true);
@@ -524,11 +534,11 @@ void PedalLegendsAudioProcessorEditor::drawBoard(juce::Graphics& g) {
               juce::Justification::centredLeft,true);
     const bool gate=processor.gateEnabled();
     button(g,R{1045,835,174,37},gate?juce::String::fromUTF8("●  NOISE GATE ON"):juce::String::fromUTF8("○  NOISE GATE OFF"),
-           [this,gate]{processor.setGateEnabled(!gate);},true,gate,12.f);
+           [this,gate]{processor.setGateEnabled(!gate);},true,gate,12.f,pedal::midi::global(pedal::midi::NoiseGate));
     drawLabel(g,juce::String::fromUTF8("Stereo linked · no added hiss"),R{1041,880,181,18},10,cream);
     const float threshold=processor.gateThreshold();
     drawKnob(g,1280,824,19,(threshold+90.f)/75.f,"THRESHOLD",juce::String(threshold,0)+" dB",
-             [this](float v){processor.setGateThreshold(v*75.f-90.f);},true);
+             [this](float v){processor.setGateThreshold(v*75.f-90.f);},true,pedal::midi::global(pedal::midi::GateThreshold));
     line(g,1370,806,1370,896,goldDark,1.5f);
     drawLabel(g,juce::String::fromUTF8("1973—2026"),R{1390,812,170,40},26,goldLight,true,juce::Justification::centred);
     drawLabel(g,juce::String::fromUTF8("VINTAGE SOUL  ·  MODERN POWER"),R{1390,853,172,19},9,gold,false,juce::Justification::centred,true);
@@ -586,17 +596,21 @@ void PedalLegendsAudioProcessorEditor::drawEditor(juce::Graphics& g) {
             const float v=stage.controls[size_t(c)];
             const auto nm=juce::String(std::string(meta.controls[size_t(c)]));
             drawKnob(g,xx[c],yy[c],31.f,v,nm,juce::String(int(std::round(v*100)))+" %",
-                     [this,c](float value){processor.setControl(selectedSlot,c,value);});
+                     [this,c](float value){processor.setControl(selectedSlot,c,value);},false,
+                     pedal::midi::slot(selectedSlot,pedal::midi::Control1+c));
         }
         drawKnob(g,1025.f,446.f,31.f,stage.mix,"PEDAL MIX",
                  juce::String(int(std::round(stage.mix*100.f)))+" %",
-                 [this](float v){processor.setSlotMix(selectedSlot,v);});
+                 [this](float v){processor.setSlotMix(selectedSlot,v);},false,
+                 pedal::midi::slot(selectedSlot,pedal::midi::Mix));
         drawKnob(g,1275.f,446.f,31.f,(stage.levelDb+18.f)/36.f,"PEDAL LEVEL",
                  juce::String(stage.levelDb,1)+" dB",
-                 [this](float v){processor.setSlotLevel(selectedSlot,v*36.f-18.f);});
+                 [this](float v){processor.setSlotLevel(selectedSlot,v*36.f-18.f);},false,
+                 pedal::midi::slot(selectedSlot,pedal::midi::Level));
         line(g,672.f,560.f,1406.f,560.f,goldDark.withAlpha(.28f));
         button(g,R{683,598,155,42},stage.enabled?juce::String::fromUTF8("●  PEDAL ON"):juce::String::fromUTF8("○  PEDAL OFF"),
-               [this,on=stage.enabled]{processor.changeSlotEnabled(selectedSlot,!on);},false,stage.enabled,14.f);
+               [this,on=stage.enabled]{processor.changeSlotEnabled(selectedSlot,!on);},false,stage.enabled,14.f,
+               pedal::midi::slot(selectedSlot,pedal::midi::Enabled));
         drawLabel(g,juce::String::fromUTF8("Quatre paramètres propres au modèle, mix et niveau indépendants."),
                   R{872,601,326,35},13,ink,true,juce::Justification::centred);
     }
@@ -765,9 +779,9 @@ void PedalLegendsAudioProcessorEditor::drawRouting(juce::Graphics& g) {
     button(g,R{1123,145,276,43},localized("BACK TO PEDALBOARD"),
            [this]{setScreen(Screen::Board);},true,false,13.f);
     button(g,R{170,237,185,45},localized("SERIES"),[this]{processor.setRoutingMode(pedal::RoutingMode::Series);},
-           !parallel,!parallel,15.f);
+           !parallel,!parallel,15.f,pedal::midi::global(pedal::midi::ParallelMode));
     button(g,R{369,237,212,45},localized("PARALLEL A/B"),[this]{processor.setRoutingMode(pedal::RoutingMode::Parallel);},
-           parallel,parallel,15.f);
+           parallel,parallel,15.f,pedal::midi::global(pedal::midi::ParallelMode));
     drawLabel(g,parallel?localized("PARALLEL DESCRIPTION"):localized("SERIAL DESCRIPTION"),
               R{611,236,766,51},17,ink,true);
 
@@ -788,7 +802,7 @@ void PedalLegendsAudioProcessorEditor::drawRouting(juce::Graphics& g) {
         if(showSwitch) button(g,R{r.getX()+6,r.getBottom()-28,r.getWidth()-12,24},
                              targetBranch==0?localized("MOVE TO B"):localized("MOVE TO A"),
                              [this,id,targetBranch]{processor.setRoutingBranch(id,targetBranch==0?1:0);},
-                             false,false,10.f);
+                             false,false,10.f,pedal::midi::slot(id,pedal::midi::Branch));
     };
     if(!parallel) {
         surface(g,R{172,314,1224,337},navySoft,midnight,13.f,goldDark);
@@ -839,7 +853,9 @@ void PedalLegendsAudioProcessorEditor::drawRouting(juce::Graphics& g) {
     g.setColour(goldLight);g.fillRoundedRectangle(R{484,771,615.f*cfg.parallelBlend,14},5.f);
     const float handleX=484.f+615.f*cfg.parallelBlend;
     g.setColour(cream);g.fillEllipse(handleX-9.f,767.f,18.f,22.f);
-    dragHorizontal(R{481,755,621,44},cfg.parallelBlend,[this](float value){processor.setParallelBlend(value);});
+    dragHorizontal(R{481,755,621,44},cfg.parallelBlend,
+                   [this](float value){processor.setParallelBlend(value);},
+                   pedal::midi::global(pedal::midi::ParallelBlend));
     drawLabel(g,"B",R{1112,766,27,27},16,goldLight,false,juce::Justification::centred);
     drawLabel(g,juce::String(int(cfg.parallelBlend*100.f))+" % B",R{1194,748,145,38},20,cream,true,
               juce::Justification::centred);
@@ -981,6 +997,11 @@ void PedalLegendsAudioProcessorEditor::paint(juce::Graphics& g) {
         case Screen::Routing:drawRouting(g);break;
         case Screen::Board:break;
     }
+    // Read-only status in the existing footer's free space: no new panel,
+    // no overlap and no changes to the 1600x930 approved geometry.
+    if(processor.midiLearnTarget()>=0)
+        drawLabel(g,localized("MIDI LEARN WAITING"),R{843,911,350,17},10,goldLight,false,
+                  juce::Justification::centred,true);
 }
 void PedalLegendsAudioProcessorEditor::handleClick(juce::Point<float> p) {
     for(auto i=hotspots.rbegin();i!=hotspots.rend();++i) {
@@ -1000,9 +1021,45 @@ void PedalLegendsAudioProcessorEditor::handleClick(juce::Point<float> p) {
         return;
     }
 }
+int PedalLegendsAudioProcessorEditor::midiTargetAt(juce::Point<float> position) const noexcept {
+    for(auto it=hotspots.rbegin();it!=hotspots.rend();++it)
+        if(it->bounds.contains(position))return it->midiTarget;
+    return -1;
+}
+void PedalLegendsAudioProcessorEditor::showMidiLearnMenu(const juce::MouseEvent& e,int target) {
+    if(target<0||target>=pedal::midi::kTargetCount)return;
+    juce::PopupMenu menu;
+    const auto id=processor.midiControllerFor(target);
+    menu.addSectionHeader(localized("MIDI LEARN"));
+    menu.addItem(1,localized("ASSIGN MIDI CC"));
+    menu.addItem(2,localized("REMOVE MIDI CC")+
+                    (id>=0?" (CC "+juce::String(pedal::midi::controller(id))+
+                             ", CH "+juce::String(pedal::midi::channel(id))+")":""),
+                 id>=0);
+    if(processor.midiLearnTarget()>=0)
+        menu.addItem(3,localized("CANCEL MIDI LEARN"));
+    juce::Component::SafePointer<PedalLegendsAudioProcessorEditor> weak(this);
+    const auto screen=e.getScreenPosition();
+    menu.showMenuAsync(juce::PopupMenu::Options()
+                       .withTargetScreenArea(juce::Rectangle<int>(screen.x,screen.y,1,1)),
+                       [weak,target](int selection) {
+        if(auto* self=weak.getComponent()) {
+            if(selection==1)self->processor.beginMidiLearn(target);
+            else if(selection==2)self->processor.clearMidiLearn(target);
+            else if(selection==3)self->processor.cancelMidiLearn();
+            self->repaint();
+        }
+    });
+}
 void PedalLegendsAudioProcessorEditor::mouseDown(const juce::MouseEvent& e) {
     dragCallback={};
-    handleClick(logicalPoint(e.getPosition()));
+    const auto position=logicalPoint(e.getPosition());
+    if(e.mods.isPopupMenu()) {
+        if(const int target=midiTargetAt(position);target>=0)
+            showMidiLearnMenu(e,target);
+        return;
+    }
+    handleClick(position);
     repaint();
 }
 void PedalLegendsAudioProcessorEditor::mouseDrag(const juce::MouseEvent& e) {
